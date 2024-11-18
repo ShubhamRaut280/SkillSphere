@@ -34,26 +34,29 @@ const Register = ({ onToggleForm }) => {
         e.preventDefault();
         setError('');
         setIsLoading(true); // Set loading to true when the form is submitted
-
+    
         // Validation: Check if all fields are filled
         if (!formData.name || !formData.email || !formData.phoneNumber || !formData.address || !formData.username || !formData.password) {
             setError('All fields are required!');
             setIsLoading(false); // Set loading to false if validation fails
             return;
         }
-
+    
         try {
             // Register user with email and password using the modular approach
             const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
             const user = userCredential.user;
             console.log('User registered:', user);
-
+    
             // After successful registration, you can update the user profile
             await updateProfile(user, {
                 displayName: formData.username,
                 phoneNumber: formData.phoneNumber,
             });
-
+    
+            // Ensure that formData.role is not undefined
+            const userRole = formData.role || 'user'; // Default to 'user' if role is not set
+    
             // Save additional user details like address, role, etc., in Firestore
             const userRef = doc(db, 'users', user.uid); // Firestore document reference
             await setDoc(userRef, {
@@ -61,13 +64,13 @@ const Register = ({ onToggleForm }) => {
                 email: formData.email,
                 phoneNumber: formData.phoneNumber,
                 address: formData.address,
-                role: formData.role,
+                role: userRole, // Use userRole here
                 username: formData.username,
             });
-
+    
             // Display success notification
             toast.success('Registration successful! Now you can login with your credentials', { position: "top-center", autoClose: 5000 });
-
+    
         } catch (err) {
             console.error('Error during registration:', err.message);
             setError(err.message); // Display Firebase error message
@@ -76,7 +79,7 @@ const Register = ({ onToggleForm }) => {
             setIsLoading(false); // Set loading to false once the operation is complete
         }
     };
-
+    
     return (
         <div>
             <h1 className="font-sans text-3xl font-bold mb-4">REGISTER</h1>
