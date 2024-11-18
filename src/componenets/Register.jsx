@@ -1,6 +1,6 @@
-// src/components/Register.js
 import React, { useState } from 'react';
-import { auth } from '../firebaseConfig.js'; // Import Firebase auth
+import { auth, db } from '../firebaseConfig.js'; // Import Firebase auth and Firestore
+import { setDoc, doc } from 'firebase/firestore'; // Firestore functions
 
 const Register = ({ onToggleForm }) => {
     const [formData, setFormData] = useState({
@@ -46,12 +46,22 @@ const Register = ({ onToggleForm }) => {
                 phoneNumber: formData.phoneNumber,
             });
 
-            // Optionally: Save additional user details like address, role, etc., in Firebase Firestore
+            // Save additional user details like address, role, etc., in Firestore
+            const userRef = doc(db, 'users', user.uid); // Firestore document reference
+            await setDoc(userRef, {
+                name: formData.name,
+                email: formData.email,
+                phoneNumber: formData.phoneNumber,
+                address: formData.address,
+                role: formData.role,
+                username: formData.username,
+            });
 
             alert('Registration successful');
+
         } catch (err) {
             console.error('Error during registration:', err.message);
-            setError(err.message);
+            setError(err.message); // Display Firebase error message
         }
     };
 

@@ -82,7 +82,7 @@ const Login = ({ onToggleForm }) => {
                 </div>
                 <button
                     type="submit"
-                    className="bg-purple-500 text-white rounded-lg py-2 px-4 w-full"
+                    className="w-full p-3 bg-purple-500 text-white rounded-lg transition transform duration-300 ease-in-out hover:bg-purple-600 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-purple-300"
                 >
                     Login Now
                 </button>
@@ -91,7 +91,7 @@ const Login = ({ onToggleForm }) => {
                 <span>Don't have an account? </span>
                 <button
                     onClick={() => onToggleForm(true)}
-                    className="text-purple-500"
+                    className="text-purple-500 font-semibold transition duration-300 ease-in-out hover:underline"
                 >
                     Register
                 </button>
