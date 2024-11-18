@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig.js'; // Import Firebase auth and Firestore
+import { createUserWithEmailAndPassword } from 'firebase/auth'; // Correct modular import for registration
+import { updateProfile } from 'firebase/auth'; // Correct modular import for profile update
 import { setDoc, doc } from 'firebase/firestore'; // Firestore functions
 
 const Register = ({ onToggleForm }) => {
@@ -35,13 +37,13 @@ const Register = ({ onToggleForm }) => {
         }
 
         try {
-            // Register user with email and password
-            const userCredential = await auth.createUserWithEmailAndPassword(formData.email, formData.password);
+            // Register user with email and password using the modular approach
+            const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
             const user = userCredential.user;
             console.log('User registered:', user);
 
             // After successful registration, you can update the user profile
-            await user.updateProfile({
+            await updateProfile(user, {
                 displayName: formData.username,
                 phoneNumber: formData.phoneNumber,
             });
