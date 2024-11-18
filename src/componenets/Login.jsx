@@ -1,17 +1,19 @@
-// src/components/Login.js
 import React, { useState } from 'react';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'; // Importing necessary functions
-import CircularProgress from '@mui/material/CircularProgress'; // Import CircularProgress
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const Login = ({ onToggleForm }) => {
+const Login = ({ onToggleForm, onUserLoggedIn }) => {
     const [formData, setFormData] = useState({
-        username: '',
+        email: '',
         password: '',
     });
     const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false); // New state to handle loading
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Handle input changes
+    // Handle input change
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -20,61 +22,64 @@ const Login = ({ onToggleForm }) => {
         });
     };
 
-    // Handle form submission
+    // Handle form submission (Login)
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(''); // Reset error message on submit
-        setIsLoading(true); // Set loading to true when submitting the form
-    
-        // Validation: Check if both fields are filled
-        if (!formData.username || !formData.password) {
-            setError('Both fields are required!');
-            setIsLoading(false); // Set loading to false if validation fails
+        setError('');
+        setIsLoading(true);
+
+        // Validation
+        if (!formData.email || !formData.password) {
+            setError('Email and password are required!');
+            setIsLoading(false);
             return;
         }
-    
-        const auth = getAuth(); // Initialize Firebase Auth
-    
+
         try {
-            // Login user with email and password
-            const userCredential = await signInWithEmailAndPassword(auth, formData.username, formData.password);
+            // Sign in with email and password
+            const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
             const user = userCredential.user;
-            console.log('User logged in:', user);
-    
-            alert('Login successful');
-        } catch (err) {
-            console.error('Error during login:', err.message);
-    
-            // Handle Firebase specific error codes and display friendly messages
-            if (err.code === 'auth/invalid-email') {
-                setError('The email address is invalid. Please check your email format and try again.');
-            } else if (err.code === 'auth/user-not-found') {
-                setError('No user found with this email address. Please check your credentials or register.');
-            } else if (err.code === 'auth/wrong-password') {
-                setError('The password is incorrect. Please try again.');
+
+            // Get the user's role from the Firestore 'users' collection
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDocSnapshot = await getDoc(userDocRef);
+            if (userDocSnapshot.exists()) {
+                const userData = userDocSnapshot.data();
+                const { role } = userData;
+
+                // Check if user is a freelancer
+                if (role === 'freelance') {
+                    // Pass the user details to the parent component
+                    onUserLoggedIn(userData, user.uid);
+                    // Optionally, show success toast
+                    toast.success('Login successful', { position: 'top-center', autoClose: 5000 });
+                } else {
+                    setError('User is not a freelancer');
+                }
             } else {
-                setError('An error occurred. Please try again later.');
+                setError('User data not found!');
             }
+        } catch (err) {
+            console.error('Login error:', err.message);
+            setError(err.message);
+            toast.error(`Error: ${err.message}`, { position: 'top-center', autoClose: 5000 });
         } finally {
-            setIsLoading(false); // Set loading to false once the operation is complete
+            setIsLoading(false);
         }
     };
 
     return (
         <div>
             <h1 className="font-sans text-3xl font-bold mb-4">LOGIN</h1>
-            
-            {/* Show error message if there's an error */}
-            {error && <div className="text-red-500 mb-4">{error}</div>} 
-
+            {error && <div className="text-red-500 mb-4">{error}</div>} {/* Error message */}
             <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                     <input
-                        type="text"
-                        name="username"
-                        placeholder="Username"
+                        type="email"
+                        name="email"
+                        placeholder="Email"
                         className="w-full p-2 border rounded"
-                        value={formData.username}
+                        value={formData.email}
                         onChange={handleChange}
                     />
                 </div>
@@ -88,27 +93,27 @@ const Login = ({ onToggleForm }) => {
                         onChange={handleChange}
                     />
                 </div>
+
                 <button
                     type="submit"
-                    className="w-full p-3 bg-purple-500 text-white rounded-lg transition transform duration-300 ease-in-out hover:bg-purple-600 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-purple-300"
-                    disabled={isLoading} // Disable the button when loading
+                    className="bg-purple-500 text-white rounded-lg py-2 px-4 w-full"
+                    disabled={isLoading} // Disable the button while loading
                 >
-                    {isLoading ? (
-                        <CircularProgress size={24} color="inherit" /> // Display Circular Progress when loading
-                    ) : (
-                        'Login Now'
-                    )}
+                    {isLoading ? 'Logging in...' : 'Login'}
                 </button>
             </form>
+
             <div className="mt-8 text-center">
                 <span>Don't have an account? </span>
                 <button
                     onClick={() => onToggleForm(true)}
-                    className="text-purple-500 font-semibold transition duration-300 ease-in-out hover:underline"
+                    className="text-purple-500"
                 >
                     Register
                 </button>
             </div>
+
+            <ToastContainer />
         </div>
     );
 };

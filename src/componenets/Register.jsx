@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig.js'; // Import Firebase auth and Firestore
-import { createUserWithEmailAndPassword } from 'firebase/auth'; // Correct modular import for registration
-import { updateProfile } from 'firebase/auth'; // Correct modular import for profile update
-import { setDoc, doc } from 'firebase/firestore'; // Firestore functions
-import { toast, ToastContainer } from 'react-toastify'; // Import toast and ToastContainer
-import 'react-toastify/dist/ReactToastify.css'; // Import react-toastify styles
-import CircularProgress from '@mui/material/CircularProgress'; // Import CircularProgress
+import { createUserWithEmailAndPassword } from 'firebase/auth'; 
+import { updateProfile } from 'firebase/auth'; 
+import { setDoc, doc } from 'firebase/firestore'; 
+import { toast, ToastContainer } from 'react-toastify'; 
+import 'react-toastify/dist/ReactToastify.css'; 
+import CircularProgress from '@mui/material/CircularProgress'; 
+import { Visibility, VisibilityOff } from '@mui/icons-material'; // Import Eye Icons
 
 const Register = ({ onToggleForm }) => {
     const [formData, setFormData] = useState({
@@ -13,12 +14,14 @@ const Register = ({ onToggleForm }) => {
         email: '',
         phoneNumber: '',
         address: '',
-        rolde: 'user', // Default role set to "user"
-        username: '',
+        role: 'user', // Default role set to "user"
         password: '',
+        confirmPassword: '',
     });
     const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false); // New state to handle loading
+    const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Handle input changes
     const handleChange = (e) => {
@@ -29,61 +32,66 @@ const Register = ({ onToggleForm }) => {
         });
     };
 
+    // Toggle password visibility
+    const handlePasswordVisibility = () => setShowPassword(!showPassword);
+    const handleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
+
     // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        setIsLoading(true); // Set loading to true when the form is submitted
-    
-        // Validation: Check if all fields are filled
-        if (!formData.name || !formData.email || !formData.phoneNumber || !formData.address || !formData.username || !formData.password) {
+        setIsLoading(true);
+
+        // Validation: Check if all fields are filled and passwords match
+        if (!formData.name || !formData.email || !formData.phoneNumber || !formData.address || !formData.password || !formData.confirmPassword) {
             setError('All fields are required!');
-            setIsLoading(false); // Set loading to false if validation fails
+            setIsLoading(false);
             return;
         }
-    
+        
+        if (formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match!');
+            setIsLoading(false);
+            return;
+        }
+
         try {
-            // Register user with email and password using the modular approach
+            // Register user with email and password
             const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
             const user = userCredential.user;
-            console.log('User registered:', user);
-    
-            // After successful registration, you can update the user profile
+
+            // Update the user profile after successful registration
             await updateProfile(user, {
-                displayName: formData.username,
+                displayName: formData.name,
                 phoneNumber: formData.phoneNumber,
             });
-    
-            // Ensure that formData.role is not undefined
-            const userRole = formData.role || 'user'; // Default to 'user' if role is not set
-    
-            // Save additional user details like address, role, etc., in Firestore
-            const userRef = doc(db, 'users', user.uid); // Firestore document reference
+
+            // Save additional user details in Firestore
+            const userRef = doc(db, 'users', user.uid);
             await setDoc(userRef, {
                 name: formData.name,
                 email: formData.email,
                 phoneNumber: formData.phoneNumber,
                 address: formData.address,
-                role: userRole, // Use userRole here
-                username: formData.username,
+                role: formData.role,
             });
-    
-            // Display success notification
+
             toast.success('Registration successful! Now you can login with your credentials', { position: "top-center", autoClose: 5000 });
-    
+
         } catch (err) {
             console.error('Error during registration:', err.message);
-            setError(err.message); // Display Firebase error message
+            setError(err.message); 
             toast.error(`Error: ${err.message}`, { position: "top-center", autoClose: 5000 });
         } finally {
-            setIsLoading(false); // Set loading to false once the operation is complete
+            setIsLoading(false);
         }
     };
-    
+
     return (
         <div>
             <h1 className="font-sans text-3xl font-bold mb-4">REGISTER</h1>
-            {error && <div className="text-red-500 mb-4">{error}</div>} {/* Error message */}
+            {error && <div className="text-red-500 mb-4">{error}</div>} 
+
             <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                     <input
@@ -136,39 +144,52 @@ const Register = ({ onToggleForm }) => {
                         <option value="freelance">Freelance</option>
                     </select>
                 </div>
-                <div className="mb-4">
+                {/* Password Field with Eye Button */}
+                <div className="relative mb-4">
                     <input
-                        type="text"
-                        name="username"
-                        placeholder="Username"
-                        className="w-full p-2 border rounded"
-                        value={formData.username}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div className="mb-4">
-                    <input
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         name="password"
                         placeholder="Password"
-                        className="w-full p-2 border rounded"
+                        className="w-full p-2 border rounded pr-10"
                         value={formData.password}
                         onChange={handleChange}
                     />
+                    <button 
+                        type="button" 
+                        onClick={handlePasswordVisibility} 
+                        className="absolute right-3 top-2"
+                    >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </button>
+                </div>
+                {/* Confirm Password Field with Eye Button */}
+                <div className="relative mb-4">
+                    <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        name="confirmPassword"
+                        placeholder="Confirm Password"
+                        className="w-full p-2 border rounded pr-10"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                    />
+                    <button 
+                        type="button" 
+                        onClick={handleConfirmPasswordVisibility} 
+                        className="absolute right-3 top-2"
+                    >
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </button>
                 </div>
 
                 <button
                     type="submit"
                     className="bg-purple-500 text-white rounded-lg py-2 px-4 w-full"
-                    disabled={isLoading} // Disable the button when loading
+                    disabled={isLoading} 
                 >
-                    {isLoading ? (
-                        <CircularProgress size={24} color="inherit" /> // Display Circular Progress when loading
-                    ) : (
-                        'Register Now'
-                    )}
+                    {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Register Now'}
                 </button>
             </form>
+
             <div className="mt-8 text-center">
                 <span>Already have an account? </span>
                 <button
@@ -179,7 +200,6 @@ const Register = ({ onToggleForm }) => {
                 </button>
             </div>
 
-            {/* Toast container */}
             <ToastContainer />
         </div>
     );
