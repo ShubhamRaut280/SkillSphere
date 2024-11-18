@@ -1,11 +1,13 @@
 // src/components/Login.js
 import React, { useState } from 'react';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'; // Importing necessary functions
 
 const Login = ({ onToggleForm }) => {
     const [formData, setFormData] = useState({
         username: '',
         password: '',
     });
+    const [error, setError] = useState('');
 
     // Handle input changes
     const handleChange = (e) => {
@@ -17,16 +19,46 @@ const Login = ({ onToggleForm }) => {
     };
 
     // Handle form submission
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Logging in...');
-        console.log('Form Data:', formData);
-        // Add your login API call here
+        setError(''); // Reset error message on submit
+    
+        // Validation: Check if both fields are filled
+        if (!formData.username || !formData.password) {
+            setError('Both fields are required!');
+            return;
+        }
+    
+        const auth = getAuth(); // Initialize Firebase Auth
+    
+        try {
+            // Login user with email and password
+            const userCredential = await signInWithEmailAndPassword(auth, formData.username, formData.password);
+            const user = userCredential.user;
+            console.log('User logged in:', user);
+    
+            alert('Login successful');
+        } catch (err) {
+            console.error('Error during login:', err.message);
+    
+            // Handle Firebase specific error codes and display friendly messages
+            if (err.code === 'auth/invalid-email') {
+                setError('The email address is invalid. Please check your email format and try again.');
+            } else if (err.code === 'auth/user-not-found') {
+                setError('No user found with this email address. Please check your credentials or register.');
+            } else if (err.code === 'auth/wrong-password') {
+                setError('The password is incorrect. Please try again.');
+            } else {
+                setError('An error occurred. Please try again later.');
+            }
+        }
     };
+    
 
     return (
         <div>
             <h1 className="font-sans text-3xl font-bold mb-4">LOGIN</h1>
+            {error && <div className="text-red-500 mb-4">{error}</div>} {/* Error message */}
             <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                     <input

@@ -1,5 +1,6 @@
 // src/components/Register.js
 import React, { useState } from 'react';
+import { auth } from '../firebaseConfig.js'; // Import Firebase auth
 
 const Register = ({ onToggleForm }) => {
     const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ const Register = ({ onToggleForm }) => {
         username: '',
         password: '',
     });
+    const [error, setError] = useState('');
 
     // Handle input changes
     const handleChange = (e) => {
@@ -22,16 +24,41 @@ const Register = ({ onToggleForm }) => {
     };
 
     // Handle form submission
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Registering...');
-        console.log('Form Data:', formData);
-        // Add your registration API call here
+        setError('');
+
+        // Validation: Check if all fields are filled
+        if (!formData.name || !formData.email || !formData.phoneNumber || !formData.address || !formData.username || !formData.password) {
+            setError('All fields are required!');
+            return;
+        }
+
+        try {
+            // Register user with email and password
+            const userCredential = await auth.createUserWithEmailAndPassword(formData.email, formData.password);
+            const user = userCredential.user;
+            console.log('User registered:', user);
+
+            // After successful registration, you can update the user profile
+            await user.updateProfile({
+                displayName: formData.username,
+                phoneNumber: formData.phoneNumber,
+            });
+
+            // Optionally: Save additional user details like address, role, etc., in Firebase Firestore
+
+            alert('Registration successful');
+        } catch (err) {
+            console.error('Error during registration:', err.message);
+            setError(err.message);
+        }
     };
 
     return (
         <div>
             <h1 className="font-sans text-3xl font-bold mb-4">REGISTER</h1>
+            {error && <div className="text-red-500 mb-4">{error}</div>} {/* Error message */}
             <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                     <input
