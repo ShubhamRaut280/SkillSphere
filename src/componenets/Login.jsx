@@ -1,6 +1,7 @@
 // src/components/Login.js
 import React, { useState } from 'react';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'; // Importing necessary functions
+import CircularProgress from '@mui/material/CircularProgress'; // Import CircularProgress
 
 const Login = ({ onToggleForm }) => {
     const [formData, setFormData] = useState({
@@ -8,6 +9,7 @@ const Login = ({ onToggleForm }) => {
         password: '',
     });
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false); // New state to handle loading
 
     // Handle input changes
     const handleChange = (e) => {
@@ -22,10 +24,12 @@ const Login = ({ onToggleForm }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(''); // Reset error message on submit
+        setIsLoading(true); // Set loading to true when submitting the form
     
         // Validation: Check if both fields are filled
         if (!formData.username || !formData.password) {
             setError('Both fields are required!');
+            setIsLoading(false); // Set loading to false if validation fails
             return;
         }
     
@@ -51,14 +55,18 @@ const Login = ({ onToggleForm }) => {
             } else {
                 setError('An error occurred. Please try again later.');
             }
+        } finally {
+            setIsLoading(false); // Set loading to false once the operation is complete
         }
     };
-    
 
     return (
         <div>
             <h1 className="font-sans text-3xl font-bold mb-4">LOGIN</h1>
-            {error && <div className="text-red-500 mb-4">{error}</div>} {/* Error message */}
+            
+            {/* Show error message if there's an error */}
+            {error && <div className="text-red-500 mb-4">{error}</div>} 
+
             <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                     <input
@@ -83,8 +91,13 @@ const Login = ({ onToggleForm }) => {
                 <button
                     type="submit"
                     className="w-full p-3 bg-purple-500 text-white rounded-lg transition transform duration-300 ease-in-out hover:bg-purple-600 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-purple-300"
+                    disabled={isLoading} // Disable the button when loading
                 >
-                    Login Now
+                    {isLoading ? (
+                        <CircularProgress size={24} color="inherit" /> // Display Circular Progress when loading
+                    ) : (
+                        'Login Now'
+                    )}
                 </button>
             </form>
             <div className="mt-8 text-center">

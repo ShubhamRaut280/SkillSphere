@@ -3,6 +3,9 @@ import { auth, db } from '../firebaseConfig.js'; // Import Firebase auth and Fir
 import { createUserWithEmailAndPassword } from 'firebase/auth'; // Correct modular import for registration
 import { updateProfile } from 'firebase/auth'; // Correct modular import for profile update
 import { setDoc, doc } from 'firebase/firestore'; // Firestore functions
+import { toast, ToastContainer } from 'react-toastify'; // Import toast and ToastContainer
+import 'react-toastify/dist/ReactToastify.css'; // Import react-toastify styles
+import CircularProgress from '@mui/material/CircularProgress'; // Import CircularProgress
 
 const Register = ({ onToggleForm }) => {
     const [formData, setFormData] = useState({
@@ -10,11 +13,12 @@ const Register = ({ onToggleForm }) => {
         email: '',
         phoneNumber: '',
         address: '',
-        role: 'user', // Default role set to "user"
+        rolde: 'user', // Default role set to "user"
         username: '',
         password: '',
     });
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false); // New state to handle loading
 
     // Handle input changes
     const handleChange = (e) => {
@@ -29,10 +33,12 @@ const Register = ({ onToggleForm }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true); // Set loading to true when the form is submitted
 
         // Validation: Check if all fields are filled
         if (!formData.name || !formData.email || !formData.phoneNumber || !formData.address || !formData.username || !formData.password) {
             setError('All fields are required!');
+            setIsLoading(false); // Set loading to false if validation fails
             return;
         }
 
@@ -59,11 +65,15 @@ const Register = ({ onToggleForm }) => {
                 username: formData.username,
             });
 
-            alert('Registration successful');
+            // Display success notification
+            toast.success('Registration successful! Now you can login with your credentials', { position: "top-center", autoClose: 5000 });
 
         } catch (err) {
             console.error('Error during registration:', err.message);
             setError(err.message); // Display Firebase error message
+            toast.error(`Error: ${err.message}`, { position: "top-center", autoClose: 5000 });
+        } finally {
+            setIsLoading(false); // Set loading to false once the operation is complete
         }
     };
 
@@ -143,11 +153,17 @@ const Register = ({ onToggleForm }) => {
                         onChange={handleChange}
                     />
                 </div>
+
                 <button
                     type="submit"
                     className="bg-purple-500 text-white rounded-lg py-2 px-4 w-full"
+                    disabled={isLoading} // Disable the button when loading
                 >
-                    Register Now
+                    {isLoading ? (
+                        <CircularProgress size={24} color="inherit" /> // Display Circular Progress when loading
+                    ) : (
+                        'Register Now'
+                    )}
                 </button>
             </form>
             <div className="mt-8 text-center">
@@ -159,6 +175,9 @@ const Register = ({ onToggleForm }) => {
                     Login
                 </button>
             </div>
+
+            {/* Toast container */}
+            <ToastContainer />
         </div>
     );
 };
