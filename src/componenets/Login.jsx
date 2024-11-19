@@ -124,7 +124,7 @@ const Login = ({ onToggleForm, onUserLoggedIn }) => {
 
                 <button
                     type="submit"
-                    className="bg-purple-500 text-white rounded-lg py-2 px-4 w-full"
+                    className="bg-purple-500 hover:bg-purple-600 text-white rounded-lg py-2 px-4 w-full"
                     disabled={isLoading} // Disable the button while loading
                 >
                     {isLoading ? 'Logging in...' : 'Login'}

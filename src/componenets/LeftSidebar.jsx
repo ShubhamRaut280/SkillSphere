@@ -1,5 +1,5 @@
 import React from "react";
-import Loader from "./Loader";
+import CheckboxWithAnimation from "./CheckboxWithAnimation";
 
 const LeftSidebar = ({ skillsList, selectedSkills, handleSkillFilter, clearFilter }) => {
     return (
@@ -26,6 +26,7 @@ const LeftSidebar = ({ skillsList, selectedSkills, handleSkillFilter, clearFilte
             >
                 Clear Filter
             </button>
+            <CheckboxWithAnimation/>
         </div>
     );
 };

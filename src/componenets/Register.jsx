@@ -225,7 +225,7 @@ const Register = ({ onToggleForm }) => {
 
                 <button
                     type="submit"
-                    className="bg-purple-500 text-white rounded-lg py-2 px-4 w-full"
+                    className="bg-purple-500 hover:bg-purple-600 text-white rounded-lg py-2 px-4 w-full"
                     disabled={isLoading} 
                 >
                     {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Register Now'}
