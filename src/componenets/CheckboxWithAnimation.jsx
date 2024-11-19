@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
 
-const CheckboxWithAnimation = () => {
-  const [checked, setChecked] = useState(true);
-
-  const handleCheckboxChange = () => {
-    setChecked(!checked);
-  };
-
+const CheckboxWithAnimation = ({ checked, onChange }) => {
   return (
     <div className="checkbox-wrapper-12">
       <div className="cbx">
@@ -14,7 +8,7 @@ const CheckboxWithAnimation = () => {
           type="checkbox"
           id="cbx-12"
           checked={checked}
-          onChange={handleCheckboxChange}
+          onChange={onChange}
         />
         <label htmlFor="cbx-12"></label>
         <svg fill="none" viewBox="0 0 15 14" height="14" width="15">
@@ -86,7 +80,7 @@ const CheckboxWithAnimation = () => {
           position: absolute;
           top: 0;
           left: 0;
-          transform: trasnlate3d(0, 0, 0);
+          transform: translate3d(0, 0, 0);
           pointer-events: none;
         }
 
