@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { auth, db } from '../firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { db } from "../firebaseConfig";
 import ProfileCard from "./ProfileCard";
 import LeftSidebar from "./LeftSidebar";
 
@@ -61,8 +60,8 @@ const HomePage = () => {
             </header>
             <div className="flex flex-grow mt-16">
                 <LeftSidebar />
-                <main className="flex-grow ml-64 overflow-y-auto">
-                    <div className="container mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <main className="flex-grow ml-10 overflow-y-auto">
+                    <div className="container mx-auto px-8 py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 justify-start">
                         {loading ? (
                             <div>Loading...</div>
                         ) : (

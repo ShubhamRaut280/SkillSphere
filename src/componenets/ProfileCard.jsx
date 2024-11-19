@@ -7,7 +7,7 @@ const ProfileCard = ({ freelancer}) => {
         : []; // Fallback in case skills are undefined or empty
 
     return (
-        <div className="border rounded-lg p-4 shadow hover:shadow-lg transition">
+        <div className="border cursor-pointer hover:bg-purple-50 rounded-[20px] px-7 py-8 shadow hover:shadow-lg transition">
             <img
                 src="https://placehold.co/100x100"
                 alt={freelancer.name}
