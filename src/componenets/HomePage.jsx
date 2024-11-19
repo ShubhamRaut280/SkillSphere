@@ -3,10 +3,22 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import ProfileCard from "./ProfileCard";
 import LeftSidebar from "./LeftSidebar";
+import Loader from "./Loader";
+
+// Helper function to get unique skills from freelancers
+const getUniqueSkills = (freelancers) => {
+    const allSkills = freelancers
+        .map((freelancer) => freelancer.skills?.split(",").map((skill) => skill.trim()))
+        .flat();
+    return [...new Set(allSkills)];
+};
 
 const HomePage = () => {
     const [freelancers, setFreelancers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedSkills, setSelectedSkills] = useState([]); // State to store selected skills
+    const [filteredFreelancers, setFilteredFreelancers] = useState([]); // Filtered freelancers based on selected skills
+    const [skillsList, setSkillsList] = useState([]); // List of unique skills
 
     useEffect(() => {
         const fetchFreelancers = async () => {
@@ -22,6 +34,8 @@ const HomePage = () => {
                     ...doc.data(),
                 }));
                 setFreelancers(fetchedFreelancers);
+                setSkillsList(getUniqueSkills(fetchedFreelancers)); // Extract unique skills
+                setFilteredFreelancers(fetchedFreelancers); // Initially show all freelancers
             } catch (error) {
                 console.error("Error fetching freelancers:", error);
             } finally {
@@ -31,6 +45,36 @@ const HomePage = () => {
 
         fetchFreelancers();
     }, []);
+
+    // Function to filter freelancers based on selected skills
+    const handleSkillFilter = (skill) => {
+        setSelectedSkills((prevSelectedSkills) => {
+            const updatedSkills = prevSelectedSkills.includes(skill)
+                ? prevSelectedSkills.filter((selected) => selected !== skill) // Deselect skill
+                : [...prevSelectedSkills, skill]; // Add skill to the selected list
+            return updatedSkills;
+        });
+    };
+
+    // Update the filtered freelancers when the selected skills change
+    useEffect(() => {
+        if (selectedSkills.length === 0) {
+            setFilteredFreelancers(freelancers); // Show all freelancers if no skill is selected
+        } else {
+            const filtered = freelancers.filter((freelancer) =>
+                selectedSkills.every((skill) =>
+                    freelancer.skills?.split(",").map((s) => s.trim()).includes(skill)
+                )
+            );
+            setFilteredFreelancers(filtered);
+        }
+    }, [selectedSkills, freelancers]);
+
+    // Clear the selected skills filter
+    const clearFilter = () => {
+        setSelectedSkills([]);
+        setFilteredFreelancers(freelancers); // Show all freelancers
+    };
 
     return (
         <div className="min-h-screen w-screen bg-white flex flex-col">
@@ -56,17 +100,23 @@ const HomePage = () => {
                             />
                         </a>
                     </div>
-
                 </div>
             </header>
             <div className="flex flex-grow mt-16">
-                <LeftSidebar />
+                <LeftSidebar
+                    skillsList={skillsList}
+                    selectedSkills={selectedSkills}
+                    handleSkillFilter={handleSkillFilter}
+                    clearFilter={clearFilter}
+                />
                 <main className="flex-grow ml-10 overflow-y-auto">
                     <div className="container mx-auto px-8 py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 justify-start">
                         {loading ? (
-                            <div>Loading...</div>
+                            <div className="grid place-items-center">
+                                <Loader />
+                            </div>
                         ) : (
-                            freelancers.map((freelancer) => (
+                            filteredFreelancers.map((freelancer) => (
                                 <ProfileCard key={freelancer.id} freelancer={freelancer} />
                             ))
                         )}
