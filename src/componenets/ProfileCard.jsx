@@ -1,4 +1,5 @@
 import React from "react";
+import HireButton from "./HireButton";
 
 const ProfileCard = ({ freelancer}) => {
     console.log(`id is ${freelancer.id}`)
@@ -31,6 +32,10 @@ const ProfileCard = ({ freelancer}) => {
                 ) : (
                     <span className="text-gray-500 text-sm">No skills listed</span>
                 )}
+            </div>
+
+            <div className="hire flex flex-wrap justify-center px-5 pt-8 ">
+            <HireButton/>
             </div>
         </div>
     );
