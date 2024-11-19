@@ -17,6 +17,9 @@ const Register = ({ onToggleForm }) => {
         role: 'user', // Default role set to "user"
         password: '',
         confirmPassword: '',
+        bio: '', // For freelance users
+        skills: '', // For freelance users
+        hourlyRate: '', // For freelance users
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -74,6 +77,9 @@ const Register = ({ onToggleForm }) => {
                 phoneNumber: formData.phoneNumber,
                 address: formData.address,
                 role: formData.role,
+                bio: formData.bio,  // Save bio for freelancers
+                skills: formData.skills,  // Save skills for freelancers
+                hourlyRate: formData.hourlyRate,  // Save hourly rate for freelancers
             });
 
             toast.success('Registration successful! Now you can login with your credentials', { position: "top-center", autoClose: 5000 });
@@ -144,6 +150,42 @@ const Register = ({ onToggleForm }) => {
                         <option value="freelance">Freelance</option>
                     </select>
                 </div>
+
+                {/* Show additional fields for Freelance role */}
+                {formData.role === 'freelance' && (
+                    <>
+                        <div className="mb-4">
+                            <textarea
+                                name="bio"
+                                placeholder="Bio"
+                                className="w-full p-2 border rounded"
+                                value={formData.bio}
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <input
+                                type="text"
+                                name="skills"
+                                placeholder="Skills"
+                                className="w-full p-2 border rounded"
+                                value={formData.skills}
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <input
+                                type="number"
+                                name="hourlyRate"
+                                placeholder="Hourly Rate"
+                                className="w-full p-2 border rounded"
+                                value={formData.hourlyRate}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </>
+                )}
+
                 {/* Password Field with Eye Button */}
                 <div className="relative mb-4">
                     <input

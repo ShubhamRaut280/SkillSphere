@@ -22,6 +22,12 @@ const Login = ({ onToggleForm, onUserLoggedIn }) => {
         });
     };
 
+    // Validate email format
+    const isValidEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
     // Handle form submission (Login)
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,6 +37,12 @@ const Login = ({ onToggleForm, onUserLoggedIn }) => {
         // Validation
         if (!formData.email || !formData.password) {
             setError('Email and password are required!');
+            setIsLoading(false);
+            return;
+        }
+
+        if (!isValidEmail(formData.email)) {
+            setError('Please enter a valid email address.');
             setIsLoading(false);
             return;
         }
@@ -47,21 +59,37 @@ const Login = ({ onToggleForm, onUserLoggedIn }) => {
                 const userData = userDocSnapshot.data();
                 const { role } = userData;
 
-                // Check if user is a freelancer
-                if (role === 'freelance') {
-                    // Pass the user details to the parent component
-                    onUserLoggedIn(userData, user.uid);
-                    // Optionally, show success toast
-                    toast.success('Login successful', { position: 'top-center', autoClose: 5000 });
-                } else {
-                    setError('User is not a freelancer');
-                }
+                // Notify parent component of login success
+                onUserLoggedIn(userData, user.uid);
+
+                // Display success toast
+                toast.success('Login successful! Redirecting...', {
+                    position: 'top-center',
+                    autoClose: 3000,
+                });
             } else {
-                setError('User data not found!');
+                setError('User data not found in the database.');
+                toast.error('User data not found!', { position: 'top-center', autoClose: 5000 });
             }
         } catch (err) {
-            console.error('Login error:', err.message);
-            setError(err.message);
+            console.error('Login error:', err.code);
+
+            // Handle specific Firebase errors
+            switch (err.code) {
+                case 'auth/user-not-found':
+                    setError('No user found with this email. Please register or check your email.');
+                    break;
+                case 'auth/wrong-password':
+                    setError('Incorrect password. Please try again.');
+                    break;
+                case 'auth/invalid-email':
+                    setError('Invalid email format.');
+                    break;
+                default:
+                    setError('An unexpected error occurred. Please try again later.');
+            }
+
+            // Show error toast
             toast.error(`Error: ${err.message}`, { position: 'top-center', autoClose: 5000 });
         } finally {
             setIsLoading(false);
