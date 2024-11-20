@@ -28,6 +28,16 @@ const Register = ({ onToggleForm }) => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Utility functions for capitalization
+
+    const capitalizeEachSubstring = (str) => {
+        if (!str) return '';
+        return str
+            .split(',')
+            .map((substr) => substr.trim().charAt(0).toUpperCase() + substr.trim().slice(1))
+            .join(', ');
+    };
+    
+
     const capitalizeEachWord = (str) => {
         return str
             .split(' ')
@@ -76,13 +86,13 @@ const Register = ({ onToggleForm }) => {
             // Register user with email and password
             const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
             const user = userCredential.user;
-
+        
             // Update the user profile after successful registration
             await updateProfile(user, {
                 displayName: capitalizeEachWord(formData.name),
                 phoneNumber: formData.phoneNumber,
             });
-
+        
             // Save additional user details in Firestore
             const userRef = doc(db, 'users', user.uid);
             await setDoc(userRef, {
@@ -93,10 +103,10 @@ const Register = ({ onToggleForm }) => {
                 location: capitalizeEachWord(formData.location), // Save location capitalized
                 role: formData.role,
                 bio: capitalizeFirstWord(formData.bio), // Save bio capitalized
-                skills: capitalizeFirstWord(formData.skills), // Save skills capitalized
+                skills: capitalizeEachSubstring(formData.skills), // Capitalize each skill
                 hourlyRate: formData.hourlyRate,
             });
-
+        
             toast.success('Registration successful! Now you can login with your credentials', { position: "top-center", autoClose: 5000 });
         } catch (err) {
             console.error('Error during registration:', err.message);
@@ -105,6 +115,7 @@ const Register = ({ onToggleForm }) => {
         } finally {
             setIsLoading(false);
         }
+        
     };
 
     return (
