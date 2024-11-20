@@ -16,9 +16,13 @@ const LeftSidebar = ({
   clearFilter,
 }) => {
   const [checkedSkills, setCheckedSkills] = useState(selectedSkills);
-  const [isSkillsDivVisible, setSkillsDivVisible] = useState(true);
-  const [isLocationDivVisible, setLocationDivVisible] = useState(true);
-  const [isRatingDivVisible, setRatingDivVisible] = useState(true);
+  const [checkedLocations, setCheckedLocations] = useState(selectedLocation);
+  const [checkedRatings, setCheckedRatings] = useState(selectedRating);
+
+  // Set dropdown visibility to false by default
+  const [isSkillsDivVisible, setSkillsDivVisible] = useState(false);
+  const [isLocationDivVisible, setLocationDivVisible] = useState(false);
+  const [isRatingDivVisible, setRatingDivVisible] = useState(false);
 
   // Toggle visibility of sections
   const toggleSkillsDiv = () => setSkillsDivVisible((prev) => !prev);
@@ -27,24 +31,36 @@ const LeftSidebar = ({
 
   const handleCheckboxChange = (skill) => {
     if (checkedSkills.includes(skill)) {
-      setCheckedSkills(checkedSkills.filter((s) => s !== skill)); // Uncheck the box
+      setCheckedSkills(checkedSkills.filter((s) => s !== skill));
     } else {
-      setCheckedSkills([...checkedSkills, skill]); // Check the box
+      setCheckedSkills([...checkedSkills, skill]);
     }
-    handleSkillFilter(skill); // Call parent handler to update skill filter
+    handleSkillFilter(skill);
   };
 
   const handleLocationChange = (location) => {
-    handleLocationFilter(location); // Update location filter in parent component
+    if (checkedLocations.includes(location)) {
+      setCheckedLocations(checkedLocations.filter((l) => l !== location));
+    } else {
+      setCheckedLocations([...checkedLocations, location]);
+    }
+    handleLocationFilter(location);
   };
 
   const handleRatingChange = (rating) => {
-    handleRatingFilter(rating); // Update rating filter in parent component
+    if (checkedRatings.includes(rating)) {
+      setCheckedRatings(checkedRatings.filter((r) => r !== rating));
+    } else {
+      setCheckedRatings([...checkedRatings, rating]);
+    }
+    handleRatingFilter(rating);
   };
 
   const handleClearFilter = () => {
     setCheckedSkills([]);
-    clearFilter(); // Call the parent clearFilter function
+    setCheckedLocations([]);
+    setCheckedRatings([]);
+    clearFilter();
   };
 
   return (
@@ -74,12 +90,12 @@ const LeftSidebar = ({
               key={index}
               className={`flex items-center p-3 mb-2 rounded-lg border cursor-pointer transition-colors ${
                 checkedSkills.includes(skill)
-                  ? ""
+                  ? "bg-purple-300 border-purple-50"
                   : "bg-white border-gray-300"
               }`}
               onClick={(e) => {
-                e.preventDefault(); // Prevent label's default behavior
-                handleCheckboxChange(skill); // Toggle checkbox when label is clicked
+                e.preventDefault();
+                handleCheckboxChange(skill);
               }}
             >
               <CheckboxWithAnimation
@@ -113,12 +129,21 @@ const LeftSidebar = ({
           {locationList.map((location, index) => (
             <label
               key={index}
-              className="flex items-center p-3 mb-2 rounded-lg border cursor-pointer transition-colors"
+              className={`flex items-center p-3 mb-2 rounded-lg border cursor-pointer transition-colors ${
+                checkedLocations.includes(location)
+                  ? "bg-purple-300 border-purple-50"
+                  : "bg-white border-gray-300"
+              }`}
               onClick={(e) => {
                 e.preventDefault();
-                handleLocationChange(location); // Update location filter
+                handleLocationChange(location);
               }}
             >
+              <CheckboxWithAnimation
+                checked={checkedLocations.includes(location)}
+                onChange={() => handleLocationChange(location)}
+                className="mr-2"
+              />
               <div className="label px-3">{location}</div>
             </label>
           ))}
@@ -145,12 +170,21 @@ const LeftSidebar = ({
           {[1, 2, 3, 4, 5].map((rating) => (
             <label
               key={rating}
-              className="flex items-center p-3 mb-2 rounded-lg border cursor-pointer transition-colors"
+              className={`flex items-center p-3 mb-2 rounded-lg border cursor-pointer transition-colors ${
+                checkedRatings.includes(`${rating}+`)
+                  ? "bg-purple-300 border-purple-50"
+                  : "bg-white border-gray-300"
+              }`}
               onClick={(e) => {
                 e.preventDefault();
-                handleRatingChange(`${rating}+`); // Update rating filter as "rating+"
+                handleRatingChange(`${rating}+`);
               }}
             >
+              <CheckboxWithAnimation
+                checked={checkedRatings.includes(`${rating}+`)}
+                onChange={() => handleRatingChange(`${rating}+`)}
+                className="mr-2"
+              />
               <div className="label px-3">{rating}+</div>
             </label>
           ))}
@@ -161,4 +195,3 @@ const LeftSidebar = ({
 };
 
 export default LeftSidebar;
-    
