@@ -13,16 +13,31 @@ const getUniqueSkills = (freelancers) => {
     return [...new Set(allSkills)];
 };
 
+// Helper function to get unique locations from freelancers
+const getUniqueLocations = (freelancers) => {
+    const allLocations = freelancers.map((freelancer) => freelancer.location).filter(Boolean);
+    return [...new Set(allLocations)];
+};
+
+// Helper function to get unique ratings from freelancers
+const getUniqueRatings = (freelancers) => {
+    const allRatings = freelancers.map((freelancer) => freelancer.rating).filter(Boolean);
+    return [...new Set(allRatings)];
+};
+
 const HomePage = () => {
     const [freelancers, setFreelancers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedSkills, setSelectedSkills] = useState([]); // State to store selected skills
-    const [filteredFreelancers, setFilteredFreelancers] = useState([]); // Filtered freelancers based on selected skills
+    const [selectedLocation, setSelectedLocation] = useState(""); // Selected location filter
+    const [selectedRating, setSelectedRating] = useState(""); // Selected rating filter
+    const [filteredFreelancers, setFilteredFreelancers] = useState([]); // Filtered freelancers based on selected filters
     const [skillsList, setSkillsList] = useState([]); // List of unique skills
+    const [locationList, setLocationList] = useState([]); // List of unique locations
+    const [ratingList, setRatingList] = useState([]); // List of unique ratings
     const [currentUserId, setCurrentUserId] = useState(null); // Current user ID
 
     useEffect(() => {
-        // Get the currently logged-in user's ID
         const fetchCurrentUser = () => {
             const user = auth.currentUser;
             if (user) {
@@ -40,7 +55,6 @@ const HomePage = () => {
                     where("role", "==", "freelance") // Fetch users with "freelance" role
                 );
                 const querySnapshot = await getDocs(q);
-
                 const fetchedFreelancers = querySnapshot.docs
                     .map((doc) => ({
                         id: doc.id,
@@ -50,6 +64,8 @@ const HomePage = () => {
 
                 setFreelancers(fetchedFreelancers);
                 setSkillsList(getUniqueSkills(fetchedFreelancers)); // Extract unique skills
+                setLocationList(getUniqueLocations(fetchedFreelancers)); // Extract unique locations
+                setRatingList(getUniqueRatings(fetchedFreelancers)); // Extract unique ratings
                 setFilteredFreelancers(fetchedFreelancers); // Initially show all freelancers
             } catch (error) {
                 console.error("Error fetching freelancers:", error);
@@ -58,40 +74,61 @@ const HomePage = () => {
             }
         };
 
-        // Fetch freelancers after ensuring the current user ID is set
         if (currentUserId !== null) {
             fetchFreelancers();
         }
     }, [currentUserId]);
 
-    // Function to filter freelancers based on selected skills
+    // Handle filtering by skills
     const handleSkillFilter = (skill) => {
         setSelectedSkills((prevSelectedSkills) => {
             const updatedSkills = prevSelectedSkills.includes(skill)
-                ? prevSelectedSkills.filter((selected) => selected !== skill) // Deselect skill
-                : [...prevSelectedSkills, skill]; // Add skill to the selected list
+                ? prevSelectedSkills.filter((selected) => selected !== skill)
+                : [...prevSelectedSkills, skill];
             return updatedSkills;
         });
     };
 
-    // Update the filtered freelancers when the selected skills change
+    // Handle filtering by location
+    const handleLocationFilter = (location) => {
+        setSelectedLocation(location); // Set selected location
+    };
+
+    // Handle filtering by rating
+    const handleRatingFilter = (rating) => {
+        setSelectedRating(rating); // Set selected rating
+    };
+
+    // Update filtered freelancers when any filter changes
     useEffect(() => {
-        if (selectedSkills.length === 0) {
-            setFilteredFreelancers(freelancers); // Show all freelancers if no skill is selected
-        } else {
-            const filtered = freelancers.filter((freelancer) =>
+        let filtered = freelancers;
+
+        if (selectedSkills.length > 0) {
+            filtered = filtered.filter((freelancer) =>
                 selectedSkills.every((skill) =>
                     freelancer.skills?.split(",").map((s) => s.trim()).includes(skill)
                 )
             );
-            setFilteredFreelancers(filtered);
         }
-    }, [selectedSkills, freelancers]);
 
-    // Clear the selected skills filter
+        if (selectedLocation) {
+            filtered = filtered.filter((freelancer) => freelancer.location === selectedLocation);
+        }
+
+        if (selectedRating) {
+            const ratingThreshold = parseInt(selectedRating, 10); // Convert "rating+" to a numeric value
+            filtered = filtered.filter((freelancer) => freelancer.rating >= ratingThreshold);
+        }
+
+        setFilteredFreelancers(filtered);
+    }, [selectedSkills, selectedLocation, selectedRating, freelancers]);
+
+    // Clear all filters
     const clearFilter = () => {
         setSelectedSkills([]);
-        setFilteredFreelancers(freelancers); // Show all freelancers
+        setSelectedLocation("");
+        setSelectedRating("");
+        setFilteredFreelancers(freelancers); // Reset to all freelancers
     };
 
     return (
@@ -123,8 +160,14 @@ const HomePage = () => {
             <div className="flex flex-grow mt-16">
                 <LeftSidebar
                     skillsList={skillsList}
+                    locationList={locationList}
+                    ratingList={ratingList}
                     selectedSkills={selectedSkills}
+                    selectedLocation={selectedLocation}
+                    selectedRating={selectedRating}
                     handleSkillFilter={handleSkillFilter}
+                    handleLocationFilter={handleLocationFilter}
+                    handleRatingFilter={handleRatingFilter}
                     clearFilter={clearFilter}
                 />
                 <main className="flex-grow ml-10 overflow-y-auto">
