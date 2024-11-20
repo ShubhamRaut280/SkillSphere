@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig.js'; // Import Firebase auth and Firestore
-import { createUserWithEmailAndPassword } from 'firebase/auth'; 
-import { updateProfile } from 'firebase/auth'; 
-import { setDoc, doc } from 'firebase/firestore'; 
-import { toast, ToastContainer } from 'react-toastify'; 
-import 'react-toastify/dist/ReactToastify.css'; 
-import CircularProgress from '@mui/material/CircularProgress'; 
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { updateProfile } from 'firebase/auth';
+import { setDoc, doc } from 'firebase/firestore';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import CircularProgress from '@mui/material/CircularProgress';
 import { Visibility, VisibilityOff } from '@mui/icons-material'; // Import Eye Icons
 
 const Register = ({ onToggleForm }) => {
@@ -14,6 +14,7 @@ const Register = ({ onToggleForm }) => {
         email: '',
         phoneNumber: '',
         address: '',
+        location: '', // New location field
         role: 'user', // Default role set to "user"
         password: '',
         confirmPassword: '',
@@ -25,6 +26,19 @@ const Register = ({ onToggleForm }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    // Utility functions for capitalization
+    const capitalizeEachWord = (str) => {
+        return str
+            .split(' ')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    };
+
+    const capitalizeFirstWord = (str) => {
+        if (!str) return '';
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    };
 
     // Handle input changes
     const handleChange = (e) => {
@@ -46,12 +60,12 @@ const Register = ({ onToggleForm }) => {
         setIsLoading(true);
 
         // Validation: Check if all fields are filled and passwords match
-        if (!formData.name || !formData.email || !formData.phoneNumber || !formData.address || !formData.password || !formData.confirmPassword) {
+        if (!formData.name || !formData.email || !formData.phoneNumber || !formData.address || !formData.location || !formData.password || !formData.confirmPassword) {
             setError('All fields are required!');
             setIsLoading(false);
             return;
         }
-        
+
         if (formData.password !== formData.confirmPassword) {
             setError('Passwords do not match!');
             setIsLoading(false);
@@ -65,28 +79,28 @@ const Register = ({ onToggleForm }) => {
 
             // Update the user profile after successful registration
             await updateProfile(user, {
-                displayName: formData.name,
+                displayName: capitalizeEachWord(formData.name),
                 phoneNumber: formData.phoneNumber,
             });
 
             // Save additional user details in Firestore
             const userRef = doc(db, 'users', user.uid);
             await setDoc(userRef, {
-                name: formData.name,
+                name: capitalizeEachWord(formData.name),
                 email: formData.email,
                 phoneNumber: formData.phoneNumber,
-                address: formData.address,
+                address: capitalizeFirstWord(formData.address),
+                location: capitalizeEachWord(formData.location), // Save location capitalized
                 role: formData.role,
-                bio: formData.bio,  // Save bio for freelancers
-                skills: formData.skills,  // Save skills for freelancers
-                hourlyRate: formData.hourlyRate,  // Save hourly rate for freelancers
+                bio: capitalizeFirstWord(formData.bio), // Save bio capitalized
+                skills: capitalizeFirstWord(formData.skills), // Save skills capitalized
+                hourlyRate: formData.hourlyRate,
             });
 
             toast.success('Registration successful! Now you can login with your credentials', { position: "top-center", autoClose: 5000 });
-
         } catch (err) {
             console.error('Error during registration:', err.message);
-            setError(err.message); 
+            setError(err.message);
             toast.error(`Error: ${err.message}`, { position: "top-center", autoClose: 5000 });
         } finally {
             setIsLoading(false);
@@ -96,7 +110,7 @@ const Register = ({ onToggleForm }) => {
     return (
         <div>
             <h1 className="font-sans text-3xl font-bold mb-4">REGISTER</h1>
-            {error && <div className="text-red-500 mb-4">{error}</div>} 
+            {error && <div className="text-red-500 mb-4">{error}</div>}
 
             <form onSubmit={handleSubmit}>
                 <div className="mb-4">
@@ -136,6 +150,16 @@ const Register = ({ onToggleForm }) => {
                         placeholder="Address"
                         className="w-full p-2 border rounded"
                         value={formData.address}
+                        onChange={handleChange}
+                    />
+                </div>
+                <div className="mb-4">
+                    <input
+                        type="text"
+                        name="location"
+                        placeholder="Location"
+                        className="w-full p-2 border rounded"
+                        value={formData.location}
                         onChange={handleChange}
                     />
                 </div>
@@ -196,9 +220,9 @@ const Register = ({ onToggleForm }) => {
                         value={formData.password}
                         onChange={handleChange}
                     />
-                    <button 
-                        type="button" 
-                        onClick={handlePasswordVisibility} 
+                    <button
+                        type="button"
+                        onClick={handlePasswordVisibility}
                         className="absolute right-3 top-2"
                     >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -214,9 +238,9 @@ const Register = ({ onToggleForm }) => {
                         value={formData.confirmPassword}
                         onChange={handleChange}
                     />
-                    <button 
-                        type="button" 
-                        onClick={handleConfirmPasswordVisibility} 
+                    <button
+                        type="button"
+                        onClick={handleConfirmPasswordVisibility}
                         className="absolute right-3 top-2"
                     >
                         {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
@@ -226,7 +250,7 @@ const Register = ({ onToggleForm }) => {
                 <button
                     type="submit"
                     className="bg-purple-500 hover:bg-purple-600 text-white rounded-lg py-2 px-4 w-full"
-                    disabled={isLoading} 
+                    disabled={isLoading}
                 >
                     {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Register Now'}
                 </button>
