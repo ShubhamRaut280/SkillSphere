@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "../firebaseConfig";
+import { db, auth } from "../firebaseConfig"; // Ensure `auth` is imported for current user info
 import ProfileCard from "./ProfileCard";
 import LeftSidebar from "./LeftSidebar";
 import Loader from "./Loader";
@@ -19,6 +19,18 @@ const HomePage = () => {
     const [selectedSkills, setSelectedSkills] = useState([]); // State to store selected skills
     const [filteredFreelancers, setFilteredFreelancers] = useState([]); // Filtered freelancers based on selected skills
     const [skillsList, setSkillsList] = useState([]); // List of unique skills
+    const [currentUserId, setCurrentUserId] = useState(null); // Current user ID
+
+    useEffect(() => {
+        // Get the currently logged-in user's ID
+        const fetchCurrentUser = () => {
+            const user = auth.currentUser;
+            if (user) {
+                setCurrentUserId(user.uid);
+            }
+        };
+        fetchCurrentUser();
+    }, []);
 
     useEffect(() => {
         const fetchFreelancers = async () => {
@@ -29,10 +41,13 @@ const HomePage = () => {
                 );
                 const querySnapshot = await getDocs(q);
 
-                const fetchedFreelancers = querySnapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data(),
-                }));
+                const fetchedFreelancers = querySnapshot.docs
+                    .map((doc) => ({
+                        id: doc.id,
+                        ...doc.data(),
+                    }))
+                    .filter((freelancer) => freelancer.id !== currentUserId); // Exclude the current user
+
                 setFreelancers(fetchedFreelancers);
                 setSkillsList(getUniqueSkills(fetchedFreelancers)); // Extract unique skills
                 setFilteredFreelancers(fetchedFreelancers); // Initially show all freelancers
@@ -43,8 +58,11 @@ const HomePage = () => {
             }
         };
 
-        fetchFreelancers();
-    }, []);
+        // Fetch freelancers after ensuring the current user ID is set
+        if (currentUserId !== null) {
+            fetchFreelancers();
+        }
+    }, [currentUserId]);
 
     // Function to filter freelancers based on selected skills
     const handleSkillFilter = (skill) => {
