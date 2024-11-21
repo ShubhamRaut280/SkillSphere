@@ -132,8 +132,8 @@ const HomePage = () => {
     };
 
     return (
-        <div className="min-h-screen w-screen bg-white flex flex-col">
-            <header className="bg-white shadow fixed top-0 left-0 w-full z-10">
+        <div className="h-screen w-screen bg-white flex flex-col">
+            <header className="bg-white shadow top-0 left-0 w-full z-10">
                 <div className="container mx-auto py-4 flex justify-between items-center">
                     <div className="text-2xl font-bold">Local Search</div>
                     <div className="flex-grow mx-4">
@@ -157,7 +157,7 @@ const HomePage = () => {
                     </div>
                 </div>
             </header>
-            <div className="flex flex-grow mt-16">
+            <div className="flex flex-grow">
                 <LeftSidebar
                     skillsList={skillsList}
                     locationList={locationList}
