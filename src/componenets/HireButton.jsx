@@ -1,10 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const HireButton = () => {
+const HireButton = ({ onClick }) => {
   return (
     <StyledWrapper>
-      <button className="cssbuttons-io-button">
+      <button onClick={onClick} className="cssbuttons-io-button">
         Hire
         <div className="icon">
           <svg height={24} width={24} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -70,6 +70,7 @@ const StyledWrapper = styled.div`
 
   .cssbuttons-io-button:active .icon {
     transform: scale(0.95);
-  }`;
+  }
+`;
 
 export default HireButton;

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import HireButton from "./HireButton";
-
+import HireModal from "./HireModal";
 // Helper function to render stars based on the rating
 const renderStars = (rating) => {
   const fullStars = Math.floor(rating);  // Full stars for the integer part
@@ -42,6 +42,15 @@ const renderStars = (rating) => {
 const ProfileCard = ({ freelancer }) => {
   console.log(`id is ${freelancer.id}`);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleHireClick = () => {
+    setIsModalOpen(true); // Open modal when the Hire button is clicked
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false); // Close modal
+  };
   const skillsArray = freelancer.skills
     ? freelancer.skills.split(",").map((skill) => skill.trim())
     : []; // Fallback in case skills are undefined or empty
@@ -88,8 +97,12 @@ const ProfileCard = ({ freelancer }) => {
       </div>
 
       <div className="hire flex flex-wrap justify-center px-5 pt-8">
-        <HireButton />
+        {/* Pass the handleHireClick function to the HireButton */}
+        <HireButton onClick={handleHireClick} />
       </div>
+
+      {/* Modal to show job request form */}
+      {isModalOpen && <HireModal freelancer={freelancer} onClose={handleCloseModal} />}
     </div>
   );
 };

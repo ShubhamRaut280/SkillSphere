@@ -4,6 +4,7 @@ import { db, auth } from "../firebaseConfig"; // Ensure `auth` is imported for c
 import ProfileCard from "./ProfileCard";
 import LeftSidebar from "./LeftSidebar";
 import Loader from "./Loader";
+import HireModal from "./HireModal";
 
 // Helper function to get unique skills from freelancers
 const getUniqueSkills = (freelancers) => {
