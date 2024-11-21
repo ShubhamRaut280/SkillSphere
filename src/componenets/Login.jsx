@@ -33,35 +33,41 @@ const Login = ({ onToggleForm, onUserLoggedIn }) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
-
+    
         // Validation
         if (!formData.email || !formData.password) {
             setError('Email and password are required!');
             setIsLoading(false);
             return;
         }
-
+    
         if (!isValidEmail(formData.email)) {
             setError('Please enter a valid email address.');
             setIsLoading(false);
             return;
         }
-
+    
         try {
             // Sign in with email and password
             const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
             const user = userCredential.user;
-
-            // Get the user's role from the Firestore 'users' collection
+    
+            // Get the user's role and collection ID from the Firestore 'users' collection
             const userDocRef = doc(db, 'users', user.uid);
             const userDocSnapshot = await getDoc(userDocRef);
+            console.log(`User id of user got : ${user.uid}`)
+            localStorage.setItem('userId', user.uid);
+
+    
             if (userDocSnapshot.exists()) {
                 const userData = userDocSnapshot.data();
-                const { role } = userData;
-
+                const { role, collectionId } = userData; // Assuming collectionId is stored in the user's document
+    
                 // Notify parent component of login success
                 onUserLoggedIn(userData, user.uid);
-
+    
+                // Optionally store the collection ID in localStorage for persistence
+    
                 // Display success toast
                 toast.success('Login successful! Redirecting...', {
                     position: 'top-center',
@@ -73,7 +79,7 @@ const Login = ({ onToggleForm, onUserLoggedIn }) => {
             }
         } catch (err) {
             console.error('Login error:', err.code);
-
+    
             // Handle specific Firebase errors
             switch (err.code) {
                 case 'auth/user-not-found':
@@ -88,14 +94,14 @@ const Login = ({ onToggleForm, onUserLoggedIn }) => {
                 default:
                     setError('An unexpected error occurred. Please try again later.');
             }
-
+    
             // Show error toast
             toast.error(`Error: ${err.message}`, { position: 'top-center', autoClose: 5000 });
         } finally {
             setIsLoading(false);
         }
     };
-
+    
     return (
         <div>
             <h1 className="font-sans text-3xl font-bold mb-4">LOGIN</h1>
