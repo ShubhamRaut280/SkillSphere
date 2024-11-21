@@ -1,24 +1,51 @@
-import React, { useState } from "react";
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
-import { collection, addDoc } from "firebase/firestore";
+import React, { useState, useEffect } from "react";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../firebaseConfig";
 
 const HireModal = ({ freelancer, onClose }) => {
   const [jobDescription, setJobDescription] = useState("");
-  const [status, setStatus] = useState("Pending"); // Initial status can be "Pending"
-  const [userId] = useState("USER_ID"); // Replace with the actual user ID
-  const [freelancerId] = useState(freelancer.id);
+  const [status, setStatus] = useState("Pending"); // Initial status is "Pending"
+  const [userId, setUserId] = useState(null); // Dynamically fetch user ID
+  const [jobStartTime, setJobStartTime] = useState(""); // For job start time
+  const [jobEndTime, setJobEndTime] = useState(""); // For job end time
+  const [address, setAddress] = useState(""); // For job address
+
+  useEffect(() => {
+    // Fetch user ID from Firebase Auth or Local Storage
+    const fetchUserId = () => {
+      const user = auth.currentUser;
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        const storedUserId = localStorage.getItem("userId");
+        if (storedUserId) {
+          setUserId(storedUserId);
+        } else {
+          console.error("User not logged in or ID not found!");
+        }
+      }
+    };
+
+    fetchUserId();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!userId) {
+      alert("User ID not found. Please log in again.");
+      return;
+    }
+
     try {
-      // Add a new job request document to Firestore
-      await addDoc(collection(db, "jobrequest"), {
+      // Save the job request document with the user ID as the document ID
+      await setDoc(doc(db, "jobrequest", userId), {
         userId,
-        freelancerId,
+        freelancerId: freelancer.id,
         jobDescription,
+        jobStartTime,
+        jobEndTime,
+        address,
         status,
         createdAt: new Date(),
       });
@@ -38,15 +65,45 @@ const HireModal = ({ freelancer, onClose }) => {
         >
           &times;
         </button>
-        <h2 className="text-xl font-semibold text-center mb-4">Job Request Form</h2>
+        <h2 className="text-xl font-semibold text-center mb-4">Job Details</h2>
         <form onSubmit={handleSubmit}>
           <textarea
             placeholder="Describe the job you want to hire for"
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
             required
-            className="w-full h-32 p-3 border border-gray-300 rounded-lg mb-4"
+            className="w-full h-24 p-3 border border-gray-300 rounded-lg mb-4"
           />
+          <div className="mb-4">
+            <label className="block text-sm font-semibold mb-1">Job Start Time</label>
+            <input
+              type="datetime-local"
+              value={jobStartTime}
+              onChange={(e) => setJobStartTime(e.target.value)}
+              required
+              className="w-full p-2 border border-gray-300 rounded-lg"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-semibold mb-1">Job End Time</label>
+            <input
+              type="datetime-local"
+              value={jobEndTime}
+              onChange={(e) => setJobEndTime(e.target.value)}
+              required
+              className="w-full p-2 border border-gray-300 rounded-lg"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-semibold mb-1">Address</label>
+            <textarea
+              placeholder="Enter job address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              required
+              className="w-full p-3 border border-gray-300 rounded-lg"
+            />
+          </div>
           <div className="flex justify-between">
             <button
               type="submit"

@@ -66,8 +66,10 @@ const ProfileCard = ({ freelancer }) => {
         className="w-16 h-16 rounded-full mb-4 mx-auto"
       />
       <h2 className="text-lg font-bold text-center">{freelancer.name}</h2>
-      <p className="text-center text-gray-600">{freelancer.bio}</p>
-      <p className="text-center text-gray-800 font-semibold">
+      <p className="text-center text-gray-600">
+        {freelancer.bio?.split(" ").slice(0, 5).join(" ")}{freelancer.bio?.split(" ").length > 5 && " ..."}
+      </p>  
+            <p className="text-center text-gray-800 font-semibold">
         ${freelancer.hourlyRate}/hr
       </p>
       
