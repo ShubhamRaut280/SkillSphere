@@ -42,8 +42,12 @@ const HireModal = ({ freelancer, onClose }) => {
         - Start Time: ${jobStartTime}
         - End Time: ${jobEndTime}
         - Address: ${address}
-  
+
+        
         From: ${userEmail}
+            Name: ${localStorage.getItem('name')}
+            Phone Number: ${localStorage.getItem('phone')}
+
       `;
   
       await emailjs.send(

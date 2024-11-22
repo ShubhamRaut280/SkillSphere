@@ -57,13 +57,18 @@ const Login = ({ onToggleForm, onUserLoggedIn }) => {
             const userDocSnapshot = await getDoc(userDocRef);
             console.log(`User id of user got : ${user.uid}`)
             localStorage.setItem('userId', user.uid);
+    
 
     
             if (userDocSnapshot.exists()) {
                 const userData = userDocSnapshot.data();
-                const { role, collectionId } = userData; // Assuming collectionId is stored in the user's document
+                const { role, phoneNumber, name, email } = userData; // Assuming collectionId is stored in the user's document
     
                 // Notify parent component of login success
+                
+                localStorage.setItem('name' , name)
+                localStorage.setItem('phone', phoneNumber)
+                localStorage.setItem('email', email)
                 onUserLoggedIn(userData, user.uid);
     
                 // Optionally store the collection ID in localStorage for persistence
