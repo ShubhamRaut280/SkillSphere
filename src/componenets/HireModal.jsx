@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebaseConfig";
+import emailjs from "emailjs-com";
 
 const HireModal = ({ freelancer, onClose }) => {
   const [jobDescription, setJobDescription] = useState("");
-  const [status, setStatus] = useState("Pending"); // Initial status is "Pending"
-  const [userId, setUserId] = useState(null); // Dynamically fetch user ID
-  const [jobStartTime, setJobStartTime] = useState(""); // For job start time
-  const [jobEndTime, setJobEndTime] = useState(""); // For job end time
-  const [address, setAddress] = useState(""); // For job address
+  const [status, setStatus] = useState("Pending");
+  const [userId, setUserId] = useState(null);
+  const [userEmail, setUserEmail] = useState(""); // User email state
+  const [jobStartTime, setJobStartTime] = useState("");
+  const [jobEndTime, setJobEndTime] = useState("");
+  const [address, setAddress] = useState("");
 
   useEffect(() => {
-    // Fetch user ID from Firebase Auth or Local Storage
-    const fetchUserId = () => {
+    const fetchUserIdAndEmail = async () => {
       const user = auth.currentUser;
       if (user) {
         setUserId(user.uid);
+        setUserEmail(user.email); // Set user email from Firebase auth
       } else {
         const storedUserId = localStorage.getItem("userId");
         if (storedUserId) {
@@ -25,21 +27,55 @@ const HireModal = ({ freelancer, onClose }) => {
         }
       }
     };
-
-    fetchUserId();
+    fetchUserIdAndEmail();
   }, []);
 
+  useEffect(() => emailjs.init("70NdbgtK4irv9cpnX"), []);
+
+
+  const sendEmail = async (freelancerEmail, freelancerName) => {
+    try {
+      const emailContent = `
+        Job Request Details:
+  
+        - Job Description: ${jobDescription}
+        - Start Time: ${jobStartTime}
+        - End Time: ${jobEndTime}
+        - Address: ${address}
+  
+        From: ${userEmail}
+      `;
+  
+      await emailjs.send(
+        "service_1g92j5z", // Replace with your EmailJS service ID
+        "template_3sjbiif", // Replace with your EmailJS template ID
+        {
+          to_name: freelancerName || "Freelancer",
+          from_name: "Local Services Search Engine Management", // Your app or company name
+          message: emailContent,
+          to_email: freelancerEmail,
+        },
+        "70NdbgtK4irv9cpnX" // Replace with your EmailJS user ID
+      );
+      console.log(`Email sent to ${freelancerEmail}`)
+      alert("Email sent successfully!");
+    } catch (error) {
+      console.error("Error sending email:", error);
+      alert("Failed to send email.");
+    }
+  };
+  
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!userId) {
       alert("User ID not found. Please log in again.");
       return;
     }
-
+  
     try {
-      // Save the job request document with the user ID as the document ID
-      await setDoc(doc(db, "jobrequest", userId), {
+      const jobRequest = {
         userId,
         freelancerId: freelancer.id,
         jobDescription,
@@ -48,14 +84,31 @@ const HireModal = ({ freelancer, onClose }) => {
         address,
         status,
         createdAt: new Date(),
-      });
-      alert("Job request submitted successfully!");
-      onClose(); // Close the modal after submission
+      };
+  
+      // Save the job request to Firestore
+      await setDoc(doc(db, "jobrequest", userId), jobRequest);
+  
+      // Fetch freelancer email
+      const freelancerDoc = await getDoc(doc(db, "users", freelancer.id));
+      if (freelancerDoc.exists()) {
+        const freelancerEmail = freelancerDoc.data().email;
+        const freelancerName = freelancer.name || "Freelancer";
+  
+        // Send email directly with dynamic content
+        await sendEmail(freelancerEmail, freelancerName);
+  
+        alert("Job request submitted");
+        onClose(); // Close the modal
+      } else {
+        console.error("Freelancer email not found.");
+      }
     } catch (error) {
       console.error("Error submitting job request: ", error);
     }
   };
-
+  
+  
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-lg w-96 relative">
@@ -113,7 +166,7 @@ const HireModal = ({ freelancer, onClose }) => {
             </button>
             <button
               type="button"
-              onClick={onClose} // Close the modal without submitting
+              onClick={onClose}
               className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition duration-200"
             >
               Cancel
