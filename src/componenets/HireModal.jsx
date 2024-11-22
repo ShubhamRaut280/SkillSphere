@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebaseConfig";
 import emailjs from "emailjs-com";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const HireModal = ({ freelancer, onClose }) => {
   const [jobDescription, setJobDescription] = useState("");
@@ -11,6 +13,7 @@ const HireModal = ({ freelancer, onClose }) => {
   const [jobStartTime, setJobStartTime] = useState("");
   const [jobEndTime, setJobEndTime] = useState("");
   const [address, setAddress] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false); // For showing progress
 
   useEffect(() => {
     const fetchUserIdAndEmail = async () => {
@@ -32,7 +35,6 @@ const HireModal = ({ freelancer, onClose }) => {
 
   useEffect(() => emailjs.init("70NdbgtK4irv9cpnX"), []);
 
-
   const sendEmail = async (freelancerEmail, freelancerName) => {
     try {
       const emailContent = `
@@ -42,14 +44,12 @@ const HireModal = ({ freelancer, onClose }) => {
         - Start Time: ${jobStartTime}
         - End Time: ${jobEndTime}
         - Address: ${address}
-
         
         From: ${userEmail}
-            Name: ${localStorage.getItem('name')}
-            Phone Number: ${localStorage.getItem('phone')}
-
+            Name: ${localStorage.getItem("name")}
+            Phone Number: ${localStorage.getItem("phone")}
       `;
-  
+
       await emailjs.send(
         "service_1g92j5z", // Replace with your EmailJS service ID
         "template_3sjbiif", // Replace with your EmailJS template ID
@@ -61,23 +61,25 @@ const HireModal = ({ freelancer, onClose }) => {
         },
         "70NdbgtK4irv9cpnX" // Replace with your EmailJS user ID
       );
-      console.log(`Email sent to ${freelancerEmail}`)
-      alert("Email sent successfully!");
+
+      alert("Job request sent")
+      toast.success(`Email sent to ${freelancerEmail}`);
     } catch (error) {
       console.error("Error sending email:", error);
-      alert("Failed to send email.");
+      toast.error("Failed to send email.");
     }
   };
-  
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!userId) {
-      alert("User ID not found. Please log in again.");
+      toast.error("User ID not found. Please log in again.");
       return;
     }
-  
+
+    setIsSubmitting(true);
+
     try {
       const jobRequest = {
         userId,
@@ -89,33 +91,36 @@ const HireModal = ({ freelancer, onClose }) => {
         status,
         createdAt: new Date(),
       };
-  
+
       // Save the job request to Firestore
       await setDoc(doc(db, "jobrequest", userId), jobRequest);
-  
+
       // Fetch freelancer email
       const freelancerDoc = await getDoc(doc(db, "users", freelancer.id));
       if (freelancerDoc.exists()) {
         const freelancerEmail = freelancerDoc.data().email;
         const freelancerName = freelancer.name || "Freelancer";
-  
+
         // Send email directly with dynamic content
         await sendEmail(freelancerEmail, freelancerName);
-  
-        alert("Job request submitted");
+
+        toast.success("Job request submitted successfully.");
         onClose(); // Close the modal
       } else {
-        console.error("Freelancer email not found.");
+        toast.error("Freelancer email not found.");
       }
     } catch (error) {
       console.error("Error submitting job request: ", error);
+      toast.error("Error submitting job request.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
-  
-  
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-lg w-96 relative">
+        <ToastContainer />
         <button
           onClick={onClose}
           className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
@@ -132,7 +137,9 @@ const HireModal = ({ freelancer, onClose }) => {
             className="w-full h-24 p-3 border border-gray-300 rounded-lg mb-4"
           />
           <div className="mb-4">
-            <label className="block text-sm font-semibold mb-1">Job Start Time</label>
+            <label className="block text-sm font-semibold mb-1">
+              Job Start Time
+            </label>
             <input
               type="datetime-local"
               value={jobStartTime}
@@ -142,7 +149,9 @@ const HireModal = ({ freelancer, onClose }) => {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-semibold mb-1">Job End Time</label>
+            <label className="block text-sm font-semibold mb-1">
+              Job End Time
+            </label>
             <input
               type="datetime-local"
               value={jobEndTime}
@@ -164,9 +173,14 @@ const HireModal = ({ freelancer, onClose }) => {
           <div className="flex justify-between">
             <button
               type="submit"
-              className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200"
+              disabled={isSubmitting}
+              className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200 flex items-center justify-center"
             >
-              Submit Job Request
+              {isSubmitting ? (
+                <span className="w-5 h-5 border-2 border-t-2 border-t-transparent border-white rounded-full animate-spin"></span>
+              ) : (
+                "Submit Job Request"
+              )}
             </button>
             <button
               type="button"
