@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import HireButton from "./HireButton";
-import HireModal from "./HireModal";
+
+import HireModal from "./Modals/HireModal";
+import HireButton from "./Buttons/HireButton";
 // Helper function to render stars based on the rating
 const renderStars = (rating) => {
   const fullStars = Math.floor(rating);  // Full stars for the integer part

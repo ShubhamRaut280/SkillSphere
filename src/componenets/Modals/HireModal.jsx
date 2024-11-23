@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { auth, db } from "../firebaseConfig";
+import { auth, db } from "../../firebaseConfig";
 import emailjs from "emailjs-com";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

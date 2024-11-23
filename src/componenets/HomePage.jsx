@@ -4,7 +4,8 @@ import { db, auth } from "../firebaseConfig"; // Ensure `auth` is imported for c
 import ProfileCard from "./ProfileCard";
 import LeftSidebar from "./LeftSidebar";
 import Loader from "./Loader";
-import HireModal from "./HireModal";
+import NotificationBtn from "./Buttons/NotificationBtn";
+import HireModal from "./Modals/HireModal";
 
 // Helper function to get unique skills from freelancers
 const getUniqueSkills = (freelancers) => {
@@ -155,6 +156,10 @@ const HomePage = () => {
                                 className="rounded-full w-10 h-10"
                             />
                         </a>
+                    </div>
+
+                    <div className="ms-5">
+                        <NotificationBtn/>
                     </div>
                 </div>
             </header>
