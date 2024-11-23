@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import NotificationCard from "../Cards/NotificationCard";
 
 const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
   return (
@@ -13,9 +14,15 @@ const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
         </div>
         <div className="content">
           <ul>
-            <li>You have a new message!</li>
-            <li>Your task is due tomorrow.</li>
-            <li>Don't forget to check your schedule.</li>
+            <li>
+              <NotificationCard/>
+            </li>
+            <li>
+              <NotificationCard/>
+            </li>
+            <li>
+              <NotificationCard/>
+            </li>
           </ul>
         </div>
       </div>
