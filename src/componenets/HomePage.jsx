@@ -5,9 +5,10 @@ import ProfileCard from "./ProfileCard";
 import LeftSidebar from "./LeftSidebar";
 import Loader from "./Loader";
 import NotificationBtn from "./Buttons/NotificationBtn";
+import NotificationDrawer from "./Modals/NotificationDrawer"; // Import the NotificationDrawer
 import HireModal from "./Modals/HireModal";
 
-// Helper function to get unique skills from freelancers
+// Helper functions remain unchanged
 const getUniqueSkills = (freelancers) => {
     const allSkills = freelancers
         .map((freelancer) => freelancer.skills?.split(",").map((skill) => skill.trim()))
@@ -15,13 +16,11 @@ const getUniqueSkills = (freelancers) => {
     return [...new Set(allSkills)];
 };
 
-// Helper function to get unique locations from freelancers
 const getUniqueLocations = (freelancers) => {
     const allLocations = freelancers.map((freelancer) => freelancer.location).filter(Boolean);
     return [...new Set(allLocations)];
 };
 
-// Helper function to get unique ratings from freelancers
 const getUniqueRatings = (freelancers) => {
     const allRatings = freelancers.map((freelancer) => freelancer.rating).filter(Boolean);
     return [...new Set(allRatings)];
@@ -30,14 +29,15 @@ const getUniqueRatings = (freelancers) => {
 const HomePage = () => {
     const [freelancers, setFreelancers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedSkills, setSelectedSkills] = useState([]); // State to store selected skills
-    const [selectedLocation, setSelectedLocation] = useState(""); // Selected location filter
-    const [selectedRating, setSelectedRating] = useState(""); // Selected rating filter
-    const [filteredFreelancers, setFilteredFreelancers] = useState([]); // Filtered freelancers based on selected filters
-    const [skillsList, setSkillsList] = useState([]); // List of unique skills
-    const [locationList, setLocationList] = useState([]); // List of unique locations
-    const [ratingList, setRatingList] = useState([]); // List of unique ratings
-    const [currentUserId, setCurrentUserId] = useState(null); // Current user ID
+    const [selectedSkills, setSelectedSkills] = useState([]);
+    const [selectedLocation, setSelectedLocation] = useState("");
+    const [selectedRating, setSelectedRating] = useState("");
+    const [filteredFreelancers, setFilteredFreelancers] = useState([]);
+    const [skillsList, setSkillsList] = useState([]);
+    const [locationList, setLocationList] = useState([]);
+    const [ratingList, setRatingList] = useState([]);
+    const [currentUserId, setCurrentUserId] = useState(null);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false); // State to manage the notification drawer
 
     useEffect(() => {
         const fetchCurrentUser = () => {
@@ -54,7 +54,7 @@ const HomePage = () => {
             try {
                 const q = query(
                     collection(db, "users"),
-                    where("role", "==", "freelance") // Fetch users with "freelance" role
+                    where("role", "==", "freelance")
                 );
                 const querySnapshot = await getDocs(q);
                 const fetchedFreelancers = querySnapshot.docs
@@ -62,13 +62,13 @@ const HomePage = () => {
                         id: doc.id,
                         ...doc.data(),
                     }))
-                    .filter((freelancer) => freelancer.id !== currentUserId); // Exclude the current user
+                    .filter((freelancer) => freelancer.id !== currentUserId);
 
                 setFreelancers(fetchedFreelancers);
-                setSkillsList(getUniqueSkills(fetchedFreelancers)); // Extract unique skills
-                setLocationList(getUniqueLocations(fetchedFreelancers)); // Extract unique locations
-                setRatingList(getUniqueRatings(fetchedFreelancers)); // Extract unique ratings
-                setFilteredFreelancers(fetchedFreelancers); // Initially show all freelancers
+                setSkillsList(getUniqueSkills(fetchedFreelancers));
+                setLocationList(getUniqueLocations(fetchedFreelancers));
+                setRatingList(getUniqueRatings(fetchedFreelancers));
+                setFilteredFreelancers(fetchedFreelancers);
             } catch (error) {
                 console.error("Error fetching freelancers:", error);
             } finally {
@@ -81,7 +81,6 @@ const HomePage = () => {
         }
     }, [currentUserId]);
 
-    // Handle filtering by skills
     const handleSkillFilter = (skill) => {
         setSelectedSkills((prevSelectedSkills) => {
             const updatedSkills = prevSelectedSkills.includes(skill)
@@ -91,17 +90,14 @@ const HomePage = () => {
         });
     };
 
-    // Handle filtering by location
     const handleLocationFilter = (location) => {
-        setSelectedLocation(location); // Set selected location
+        setSelectedLocation(location);
     };
 
-    // Handle filtering by rating
     const handleRatingFilter = (rating) => {
-        setSelectedRating(rating); // Set selected rating
+        setSelectedRating(rating);
     };
 
-    // Update filtered freelancers when any filter changes
     useEffect(() => {
         let filtered = freelancers;
 
@@ -118,19 +114,22 @@ const HomePage = () => {
         }
 
         if (selectedRating) {
-            const ratingThreshold = parseInt(selectedRating, 10); // Convert "rating+" to a numeric value
+            const ratingThreshold = parseInt(selectedRating, 10);
             filtered = filtered.filter((freelancer) => freelancer.rating >= ratingThreshold);
         }
 
         setFilteredFreelancers(filtered);
     }, [selectedSkills, selectedLocation, selectedRating, freelancers]);
 
-    // Clear all filters
     const clearFilter = () => {
         setSelectedSkills([]);
         setSelectedLocation("");
         setSelectedRating("");
-        setFilteredFreelancers(freelancers); // Reset to all freelancers
+        setFilteredFreelancers(freelancers);
+    };
+
+    const toggleDrawer = () => {
+        setIsDrawerOpen((prevState) => !prevState); // Toggle the drawer's state
     };
 
     return (
@@ -157,9 +156,8 @@ const HomePage = () => {
                             />
                         </a>
                     </div>
-
                     <div className="ms-5">
-                        <NotificationBtn/>
+                        <NotificationBtn toggleDrawer={toggleDrawer} />
                     </div>
                 </div>
             </header>
@@ -190,6 +188,9 @@ const HomePage = () => {
                     </div>
                 </main>
             </div>
+
+            {/* Add the notification drawer */}
+            <NotificationDrawer isOpen={isDrawerOpen} toggleDrawer={toggleDrawer} />
         </div>
     );
 };
