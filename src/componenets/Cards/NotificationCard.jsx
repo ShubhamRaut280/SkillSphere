@@ -34,32 +34,45 @@ const NotificationCard = ({ jobRequest, onAccept, onReject }) => {
   }, [userId]);
 
   return (
-    <div className="block font-sans items-center rounded-2xl p-3 bg-purple-100 m-2">
-      <p className="ml-2 mr-10 mt-1 items-center mb-2 w-auto h-auto font-bold">
-        Job Request: {jobDescription}
-      </p>
-      <p className="ml-2">From: {userDetails?.name || "Loading..."}</p>
-      <p className="ml-2">Email: {userDetails?.email || "Loading..."}</p>
-      <p className="ml-2">Phone: {userDetails?.phoneNumber || "Loading..."}</p>
-      <p className="ml-2">Address: {address}</p>
-      <p className="ml-2">Start Time: {new Date(jobStartTime).toLocaleString()}</p>
-      <p className="ml-2">End Time: {new Date(jobEndTime).toLocaleString()}</p>
+    <div className="block font-sans items-center rounded-2xl p-4 bg-purple-100 m-2">
+    
+    <p className="font-bold flex flex-col gap-3 mb-2">Job Request</p>
 
-      <div className="inline-flex space-x-2 mt-2">
-        <button
-          className="w-100 h-auto bg-green-500 px-4 py-3 rounded-3xl text-white font-semibold hover:bg-green-700"
-          onClick={onAccept}
-        >
-          Accept
-        </button>
-        <button
-          className="w-100 h-auto bg-red-500 px-3 py-3 rounded-3xl text-white font-semibold hover:bg-red-700"
-          onClick={onReject}
-        >
-          Reject
-        </button>
+    <p className="mb-2">Description : {jobDescription}</p>
+
+
+    <div className="flex flex-wrap">
+      {/* Left Column */}
+
+      <div className="flex-1 mr-4">
+        <p className="mb-2">From : {userDetails?.name || "Loading..."}</p>
+        <p className="mb-2">Email : {userDetails?.email || "Loading..."}</p>
+        <p className="mb-2">Phone : {userDetails?.phoneNumber || "Loading..."}</p>
+
+      </div>
+      {/* Right Column */}
+      <div className="flex-1">
+        <p className="mb-2">Address : {address}</p>
+        <p className="mb-2">Start Time : {new Date(jobStartTime).toLocaleString()}</p>
+        <p className="mb-2">End Time : {new Date(jobEndTime).toLocaleString()}</p>
       </div>
     </div>
+    {/* Buttons */}
+    <div className="flex space-x-4 mt-4">
+      <button
+        className="w-32 bg-green-500 px-4 py-3 rounded-3xl text-white font-semibold hover:bg-green-700"
+        onClick={onAccept}
+      >
+        Accept
+      </button>
+      <button
+        className="w-32 bg-red-500 px-4 py-3 rounded-3xl text-white font-semibold hover:bg-red-700"
+        onClick={onReject}
+      >
+        Reject
+      </button>
+    </div>
+  </div>
   );
 };
 

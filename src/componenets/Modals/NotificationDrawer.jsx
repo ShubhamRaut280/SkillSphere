@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import NotificationCard from "../Cards/NotificationCard";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { auth, db } from "../../firebaseConfig";
+import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
+import { db } from "../../firebaseConfig";
 
 const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
   const [jobRequests, setJobRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const userId = localStorage.getItem('userId')
+  const userId = localStorage.getItem("userId");
 
   useEffect(() => {
     const fetchJobRequests = async () => {
@@ -22,7 +22,6 @@ const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
           id: doc.id,
           ...doc.data(),
         }));
-        console.log("found some job requests")
         setJobRequests(requests);
       } catch (error) {
         console.error("Error fetching job requests: ", error);
@@ -33,6 +32,23 @@ const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
 
     fetchJobRequests();
   }, [userId]);
+
+  const handleUpdateStatus = async (requestId, newStatus) => {
+    try {
+      const requestRef = doc(db, "jobrequest", requestId);
+      await updateDoc(requestRef, { status: newStatus });
+
+      // Update the local state to reflect the change
+      setJobRequests((prevRequests) =>
+        prevRequests.map((request) =>
+          request.id === requestId ? { ...request, status: newStatus } : request
+        )
+      );
+      console.log(`Job request ${requestId} updated to status: ${newStatus}`);
+    } catch (error) {
+      console.error("Error updating job request status: ", error);
+    }
+  };
 
   return (
     <DrawerWrapper isOpen={isOpen}>
@@ -52,8 +68,8 @@ const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
                 <li key={request.id}>
                   <NotificationCard
                     jobRequest={request}
-                    onAccept={() => console.log(`Accepted: ${request.id}`)}
-                    onReject={() => console.log(`Rejected: ${request.id}`)}
+                    onAccept={() => handleUpdateStatus(request.id, "Accepted")}
+                    onReject={() => handleUpdateStatus(request.id, "Rejected")}
                   />
                 </li>
               ))}
