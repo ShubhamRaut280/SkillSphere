@@ -46,6 +46,13 @@ const NotificationCard = ({ jobRequest, onAccept, onReject }) => {
         </div>
       </div>
 
+      {
+        status === "pending" ?  (<p className="mb-2">Status : Not yet responded</p>)
+        : status === "accepted" ?  (<p className="mb-2">Status : Accepted</p>)
+        :  ( <p className="mb-2">Status : Rejected</p>)
+
+      }
+
       {/* Status-based rendering */}
       {status === "accepted" || status === "rejected" ? (
         <p className="mt-4 text-gray-500">You already responded to this request.</p>
