@@ -1,8 +1,39 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import NotificationCard from "../Cards/NotificationCard";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { auth, db } from "../../firebaseConfig";
 
 const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
+  const [jobRequests, setJobRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const userId = localStorage.getItem('userId')
+
+  useEffect(() => {
+    const fetchJobRequests = async () => {
+      if (!userId) return;
+
+      try {
+        setLoading(true);
+        const q = query(collection(db, "jobrequest"), where("freelancerId", "==", userId));
+        const querySnapshot = await getDocs(q);
+        const requests = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log("found some job requests")
+        setJobRequests(requests);
+      } catch (error) {
+        console.error("Error fetching job requests: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobRequests();
+  }, [userId]);
+
   return (
     <DrawerWrapper isOpen={isOpen}>
       <div className="drawer">
@@ -13,17 +44,23 @@ const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
           </button>
         </div>
         <div className="content">
-          <ul>
-            <li>
-              <NotificationCard/>
-            </li>
-            <li>
-              <NotificationCard/>
-            </li>
-            <li>
-              <NotificationCard/>
-            </li>
-          </ul>
+          {loading ? (
+            <p>Loading...</p>
+          ) : jobRequests.length > 0 ? (
+            <ul>
+              {jobRequests.map((request) => (
+                <li key={request.id}>
+                  <NotificationCard
+                    jobRequest={request}
+                    onAccept={() => console.log(`Accepted: ${request.id}`)}
+                    onReject={() => console.log(`Rejected: ${request.id}`)}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No job requests found.</p>
+          )}
         </div>
       </div>
     </DrawerWrapper>
