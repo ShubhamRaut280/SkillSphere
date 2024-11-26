@@ -157,7 +157,9 @@ const HomePage = () => {
                         </a>
                     </div>
                     <div className="ms-5">
-                        <NotificationBtn toggleDrawer={toggleDrawer} />
+                        {
+                            localStorage.getItem("role") !== 'user' && <NotificationBtn toggleDrawer={toggleDrawer} />
+                        }
                     </div>
                 </div>
             </header>

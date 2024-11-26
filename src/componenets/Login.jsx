@@ -69,6 +69,7 @@ const Login = ({ onToggleForm, onUserLoggedIn }) => {
                 localStorage.setItem('name' , name)
                 localStorage.setItem('phone', phoneNumber)
                 localStorage.setItem('email', email)
+                localStorage.setItem('role', role)
                 onUserLoggedIn(userData, user.uid);
     
                 // Optionally store the collection ID in localStorage for persistence
