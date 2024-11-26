@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import NotificationCard from "../Cards/NotificationCard";
-import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, query, where, onSnapshot, updateDoc, doc } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 
 const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
@@ -10,43 +10,39 @@ const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
 
   const userId = localStorage.getItem("userId");
 
+  // Fetch job requests and listen to real-time changes
   useEffect(() => {
-    const fetchJobRequests = async () => {
-      if (!userId) return;
+    if (!userId) return;
 
-      try {
-        setLoading(true);
-        const q = query(collection(db, "jobrequest"), where("freelancerId", "==", userId));
-        const querySnapshot = await getDocs(q);
-        const requests = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setJobRequests(requests);
-      } catch (error) {
-        console.error("Error fetching job requests: ", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const q = query(collection(db, "jobrequest"), where("freelancerId", "==", userId));
 
-    fetchJobRequests();
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const requests = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setJobRequests(requests);
+      setLoading(false);
+    });
+
+    // Cleanup listener on unmount
+    return () => unsubscribe();
   }, [userId]);
 
-  const handleUpdateStatus = async (requestId, newStatus) => {
+  // Update the status of the job request in Firebase and local state
+  const handleStatusUpdate = async (requestId, newStatus) => {
     try {
-      const requestRef = doc(db, "jobrequest", requestId);
-      await updateDoc(requestRef, { status: newStatus });
+      const requestDoc = doc(db, "jobrequest", requestId);
+      await updateDoc(requestDoc, { status: newStatus });
 
-      // Update the local state to reflect the change
+      // Optionally update local state (if needed, but real-time listener will handle this)
       setJobRequests((prevRequests) =>
-        prevRequests.map((request) =>
-          request.id === requestId ? { ...request, status: newStatus } : request
+        prevRequests.map((req) =>
+          req.id === requestId ? { ...req, status: newStatus } : req
         )
       );
-      console.log(`Job request ${requestId} updated to status: ${newStatus}`);
     } catch (error) {
-      console.error("Error updating job request status: ", error);
+      console.error("Error updating status: ", error);
     }
   };
 
@@ -68,8 +64,8 @@ const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
                 <li key={request.id}>
                   <NotificationCard
                     jobRequest={request}
-                    onAccept={() => handleUpdateStatus(request.id, "Accepted")}
-                    onReject={() => handleUpdateStatus(request.id, "Rejected")}
+                    onAccept={() => handleStatusUpdate(request.id, "accepted")}
+                    onReject={() => handleStatusUpdate(request.id, "rejected")}
                   />
                 </li>
               ))}
