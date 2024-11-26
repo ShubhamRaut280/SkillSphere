@@ -1,14 +1,71 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import NotificationCard from "../Cards/NotificationCard";
-import { collection, query, where, onSnapshot, updateDoc, doc } from "firebase/firestore";
+import { collection, query, where, onSnapshot, updateDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
+import { toast } from "react-toastify";
+import emailjs from 'emailjs-com';
 
 const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
   const [jobRequests, setJobRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userDetails, setUserDetails] = useState({});
+  const userId = localStorage.getItem("userId"); // This is still needed for the freelancer
 
-  const userId = localStorage.getItem("userId");
+  // Fetch user details from Firebase
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchUserDetails = async () => {
+      try {
+        const userDoc = await getDoc(doc(db, "users", userId));
+        if (userDoc.exists()) {
+          setUserDetails(userDoc.data());
+        } else {
+          console.error("User not found");
+        }
+      } catch (error) {
+        console.error("Error fetching user details: ", error);
+      }
+    };
+
+    fetchUserDetails();
+  }, [userId]);
+
+  const sendEmailToUser = async (userEmail, userName, job, newStatus) => {
+    const status = newStatus === "accepted" ? "Accepted" : "Rejected";
+    try {
+      const emailContent = `
+        Your job request regarding the following job has been ${status}:\n\n
+        - Job Description: ${job.jobDescription}\n
+        - Start Time: ${new Date(job.jobStartTime).toLocaleString()}\n
+        - End Time: ${new Date(job.jobEndTime).toLocaleString()}\n
+        - Address: ${job.address}\n
+
+        - Freelancer: ${localStorage.getItem("name")}
+               email: ${localStorage.getItem("email")}
+        \n
+        Thank you!\n
+      `;
+
+      await emailjs.send(
+        "service_1g92j5z", // Replace with your EmailJS service ID
+        "template_6r6lhkt", // Replace with your EmailJS template ID
+        {
+          to_name: userName,
+          from_name: localStorage.getItem("name"),
+          message: emailContent,
+          to_email: userEmail,
+        },
+        "70NdbgtK4irv9cpnX" // Replace with your EmailJS user ID
+      );
+
+      toast.success(`Email sent to ${userEmail}`);
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast.error("Failed to send email.");
+    }
+  };
 
   // Fetch job requests and listen to real-time changes
   useEffect(() => {
@@ -36,6 +93,32 @@ const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
   const handleStatusUpdate = async (requestId, newStatus) => {
     try {
       const requestDoc = doc(db, "jobrequest", requestId);
+      const requestSnapshot = await getDoc(requestDoc);
+
+      if (!requestSnapshot.exists()) {
+        console.log("Job request not found.");
+        return;
+      }
+
+      const job = requestSnapshot.data();
+      const clientId = job.userId; // Assuming 'userId' refers to the client who made the request
+
+      // Fetch user details of the client
+      const userDoc = await getDoc(doc(db, "users", clientId));
+      if (!userDoc.exists()) {
+        console.log("User not found.");
+        return;
+      }
+
+      const user = userDoc.data();
+      const userName = user.name;
+      const userEmail = user.email;
+
+      // Send email to the client user
+      if (userEmail) {
+        sendEmailToUser(userEmail, userName, job, newStatus);
+      }
+
       await updateDoc(requestDoc, { status: newStatus });
 
       // Optionally update local state (if needed, but real-time listener will handle this)
@@ -69,7 +152,6 @@ const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
                     jobRequest={request}
                     onAccept={() => handleStatusUpdate(request.id, "accepted")}
                     onReject={() => handleStatusUpdate(request.id, "rejected")}
-                    // Show "You already responded" message when status is 'accepted' or 'rejected'
                     isResponded={request.status === "accepted" || request.status === "rejected"}
                   />
                 </li>
