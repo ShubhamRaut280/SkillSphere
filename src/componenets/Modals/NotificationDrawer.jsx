@@ -21,7 +21,10 @@ const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
         id: doc.id,
         ...doc.data(),
       }));
-      setJobRequests(requests);
+
+      // Sort requests by 'createdAt' field in descending order (newest first)
+      const sortedRequests = requests.sort((a, b) => b.createdAt - a.createdAt);
+      setJobRequests(sortedRequests);
       setLoading(false);
     });
 
@@ -66,6 +69,8 @@ const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
                     jobRequest={request}
                     onAccept={() => handleStatusUpdate(request.id, "accepted")}
                     onReject={() => handleStatusUpdate(request.id, "rejected")}
+                    // Show "You already responded" message when status is 'accepted' or 'rejected'
+                    isResponded={request.status === "accepted" || request.status === "rejected"}
                   />
                 </li>
               ))}
