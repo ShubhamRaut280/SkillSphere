@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, collection, getDoc } from "firebase/firestore";
 import { auth, db } from "../../firebaseConfig";
 import emailjs from "emailjs-com";
 import { ToastContainer, toast } from "react-toastify";
@@ -55,7 +55,7 @@ const HireModal = ({ freelancer, onClose }) => {
         "template_3sjbiif", // Replace with your EmailJS template ID
         {
           to_name: freelancerName || "Freelancer",
-          from_name: "Local Services Search Engine Management", // Your app or company name
+          from_name: `${localStorage.getItem("name")}`, // Your app or company name
           message: emailContent,
           to_email: freelancerEmail,
         },
@@ -72,14 +72,14 @@ const HireModal = ({ freelancer, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!userId) {
       toast.error("User ID not found. Please log in again.");
       return;
     }
-
+  
     setIsSubmitting(true);
-
+  
     try {
       const jobRequest = {
         userId,
@@ -91,19 +91,20 @@ const HireModal = ({ freelancer, onClose }) => {
         status,
         createdAt: new Date(),
       };
-
-      // Save the job request to Firestore
-      await setDoc(doc(db, "jobrequest", userId), jobRequest);
-
+  
+      // Create a new document with a random ID
+      const jobRequestRef = doc(collection(db, "jobrequest"));
+      await setDoc(jobRequestRef, jobRequest);
+  
       // Fetch freelancer email
       const freelancerDoc = await getDoc(doc(db, "users", freelancer.id));
       if (freelancerDoc.exists()) {
         const freelancerEmail = freelancerDoc.data().email;
         const freelancerName = freelancer.name || "Freelancer";
-
+  
         // Send email directly with dynamic content
         await sendEmail(freelancerEmail, freelancerName);
-
+  
         toast.success("Job request submitted successfully.");
         onClose(); // Close the modal
       } else {
@@ -116,6 +117,7 @@ const HireModal = ({ freelancer, onClose }) => {
       setIsSubmitting(false);
     }
   };
+  
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
