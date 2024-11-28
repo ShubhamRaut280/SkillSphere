@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { db, auth } from "../firebaseConfig"; // Ensure `auth` is imported for current user info
-import ProfileCard from "./ProfileCard";
-import LeftSidebar from "./LeftSidebar";
-import Loader from "./Loader";
-import NotificationBtn from "./Buttons/NotificationBtn";
-import NotificationDrawer from "./Modals/NotificationDrawer"; // Import the NotificationDrawer
-import HireModal from "./Modals/HireModal";
+import { db, auth } from "../../firebaseConfig"; // Ensure `auth` is imported for current user info
+import ProfileCard from "../ProfileCard";
+import LeftSidebar from "../LeftSidebar";
+import Loader from "../Loader";
+import NotificationBtn from "../Buttons/NotificationBtn";
+import NotificationDrawer from "../Modals/NotificationDrawer"; // Import the NotificationDrawer
+import HireModal from "../Modals/HireModal";
 
 // Helper functions remain unchanged
 const getUniqueSkills = (freelancers) => {
