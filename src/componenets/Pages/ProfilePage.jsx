@@ -160,17 +160,32 @@ const ProfilePage = () => {
                 </div>
                 <div className="flex ms-10 justify-between items-center">
                     <div>
-                        <h1 className="text-2xl font-bold">
-                            {name}
-                        </h1>
-                        <p className="text-gray-600">
-                            {location}
-                        </p>
-                        <p className="text-gray-600 mt-1">
-                            Phone: {phone}
-                        </p>
+                    <div className="flex items-center gap-2">
+                            <div className="flex items-center text-2xl font-bold gap-1">
+                                {name}
+                            </div>
+                        </div>
 
-                        <p className="text-gray-600">Email: {email}</p>
+                        <div className="flex items-center gap-2">
+                            <span className="text-gray-600 font-medium text-lg">Address:</span>
+                            <div className="flex items-center gap-1">
+                                {location}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <span className="text-gray-600 font-medium text-lg">Phone:</span>
+                            <div className="flex items-center gap-1">
+                                {phone}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <span className="text-gray-600 font-medium text-lg">Email:</span>
+                            <div className="flex items-center gap-1">
+                                {email}
+                            </div>
+                        </div>
 
                     </div>
 
