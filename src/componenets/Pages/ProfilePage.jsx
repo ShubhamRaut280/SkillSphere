@@ -12,6 +12,42 @@ import {
 import { auth, db } from '../../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 
+const renderStars = (rating) => {
+    const fullStars = Math.floor(rating);  // Full stars for the integer part
+    const halfStar = rating % 1 >= 0.5 ? 1 : 0;  // Half star if the decimal part is >= 0.5
+    const emptyStars = 5 - fullStars - halfStar;  // Remaining empty stars to complete 5 stars
+
+    return (
+        <div className="flex items-center justify-center gap-1">
+            {/* Full stars */}
+            {[...Array(fullStars)].map((_, index) => (
+                <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="#a855f7" viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24l-6.91-.58L12 2 8.91 8.66 2 9.24l5.46 4.73L5.82 21z" />
+                </svg>
+            ))}
+
+            {/* Half star */}
+            {halfStar === 1 && (
+                <svg xmlns="http://www.w3.org/2000/svg" fill="url(#half)" viewBox="0 0 24 24" width="18" height="18">
+                    <defs>
+                        <linearGradient id="half" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="50%" stopColor="#a855f7" />  {/* Filled part */}
+                            <stop offset="50%" stopColor="#d1d5db" />  {/* Empty part */}
+                        </linearGradient>
+                    </defs>
+                    <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24l-6.91-.58L12 2 8.91 8.66 2 9.24l5.46 4.73L5.82 21z" />
+                </svg>
+            )}
+
+            {/* Empty stars */}
+            {[...Array(emptyStars)].map((_, index) => (
+                <svg key={index + fullStars + halfStar} xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#a855f7" viewBox="0 0 24 24" width="16" height="16">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 17.27L18.18 21 16.54 13.97 22 9.24l-6.91-.58L12 2 8.91 8.66 2 9.24l5.46 4.73L5.82 21z" />
+                </svg>
+            ))}
+        </div>
+    );
+};
 const ProfilePage = () => {
     const [showBioDialog, setShowBioDialog] = useState(false);
     const [showSkillsDialog, setShowSkillsDialog] = useState(false);
@@ -35,6 +71,8 @@ const ProfilePage = () => {
     const [phone, setPhone] = useState("+91 1234567890");
     const [location, setLocation] = useState("Pune, India");
     const [email, setEmail] = useState("");
+    const [user, setUser] = useState({}); // User object
+    const [rating, setRating] = useState(0.0);
 
 
     useEffect(() => {
@@ -42,11 +80,17 @@ const ProfilePage = () => {
             const userDocRef = doc(db, 'users', localStorage.getItem('userId'));
             const userDocSnapshot = await getDoc(userDocRef);
             if (userDocSnapshot.exists()) {
+
                 const userdata = userDocSnapshot.data()
+
+                setUser(userdata)
                 setName(userdata.name)
                 setBio(userdata.bio)
                 setEmail(userdata.email)
-    
+
+                const rating = parseFloat(userdata.rating) || 0;  // Ensure rating is a number
+                setRating(rating)
+
                 const skillsArray = userdata.skills
                     ? userdata.skills.split(",").map((skill) => skill.trim())
                     : [];
@@ -127,7 +171,27 @@ const ProfilePage = () => {
                         </p>
 
                         <p className="text-gray-600">Email: {email}</p>
+
                     </div>
+
+                    <div className="ms-10">
+                        {/* Hourly Rate Section */}
+                        <div className="flex items-center gap-2 mb-4">
+                            <span className="bg-purple-100 text-purple-700 font-semibold py-1 px-3 rounded-lg text-lg shadow-sm">
+                                ${user.hourlyRate}/hr
+                            </span>
+                            <span className="text-gray-600 font-medium">Hourly Rate</span>
+                        </div>
+
+                        {/* Ratings Section */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-gray-600 font-medium text-lg">Rating:</span>
+                            <div className="flex items-center gap-1">
+                                {renderStars(rating)}
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
                 <div className="ml-auto flex justify-center">
                     <button
