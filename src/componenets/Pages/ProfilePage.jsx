@@ -8,9 +8,8 @@ import {
     faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
-
 import { auth, db } from '../../firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, getFirestore, updateDoc } from 'firebase/firestore';
 
 const renderStars = (rating) => {
     const fullStars = Math.floor(rating);  // Full stars for the integer part
@@ -99,6 +98,7 @@ const ProfilePage = () => {
                 setPhone(userdata.phoneNumber)
                 setLocation(userdata.address)
                 setHourlyRate(userdata.hourlyRate)
+                setProfileImage(userdata.img)
 
                 console.log(userdata)
             }
@@ -119,14 +119,27 @@ const ProfilePage = () => {
         setSkills(skills.filter((_, i) => i !== index));
     };
 
-    const handleImageChange = (event) => {
+    const handleImageChange =  (event) => {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfileImage(reader.result);
+            reader.onloadend = async () => {
+                const base64String = reader.result.split(",")[1]; // Extracting only the Base64 data
+                setProfileImage(`data:image/jpeg;base64,${base64String}`);
+                console.log("Base64 String:", base64String); // Logging the Base64 string
+                try{
+                    const userDocRef = doc(db, "users", localStorage.getItem('userId'));
+        
+                    await updateDoc(userDocRef, { 'img' : `data:image/jpeg;base64,${base64String}` });
+            
+                    console.log(`Image URL updated successfully.`);
+                } catch (error) {
+                    console.error("Error updating image URL:", error);
+                }
             };
             reader.readAsDataURL(file);
+
+        
         }
     };
 
