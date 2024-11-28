@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faArrowLeft,
@@ -8,10 +8,17 @@ import {
     faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
+
+import { auth, db } from '../../firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
+
 const ProfilePage = () => {
     const [showBioDialog, setShowBioDialog] = useState(false);
     const [showSkillsDialog, setShowSkillsDialog] = useState(false);
     const [showEditDetailsDialog, setShowEditDetailsDialog] = useState(false); // Dialog state
+
+
+
     const [bio, setBio] = useState(
         "I’m a developer experienced in building websites for small and medium-sized businesses."
     );
@@ -27,6 +34,33 @@ const ProfilePage = () => {
     const [name, setName] = useState("Shubham K.");
     const [phone, setPhone] = useState("+91 1234567890");
     const [location, setLocation] = useState("Pune, India");
+    const [email, setEmail] = useState("");
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const userDocRef = doc(db, 'users', localStorage.getItem('userId'));
+            const userDocSnapshot = await getDoc(userDocRef);
+            if (userDocSnapshot.exists()) {
+                const userdata = userDocSnapshot.data()
+                setName(userdata.name)
+                setBio(userdata.bio)
+                setEmail(userdata.email)
+    
+                const skillsArray = userdata.skills
+                    ? userdata.skills.split(",").map((skill) => skill.trim())
+                    : [];
+                setSkills(skillsArray)
+                setPhone(userdata.phoneNumber)
+                setLocation(userdata.address)
+
+                console.log(userdata)
+            }
+        }
+
+        fetchData()
+    })
+
 
     const handleAddSkill = () => {
         if (newSkill.trim() !== "") {
@@ -92,7 +126,7 @@ const ProfilePage = () => {
                             Phone: {phone}
                         </p>
 
-                        <p className="text-gray-600">Email: example@example.com</p>
+                        <p className="text-gray-600">Email: {email}</p>
                     </div>
                 </div>
                 <div className="ml-auto flex justify-center">
