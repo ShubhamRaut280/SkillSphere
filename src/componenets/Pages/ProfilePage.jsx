@@ -22,6 +22,7 @@ const ProfilePage = () => {
         "SEO",
     ]);
     const [newSkill, setNewSkill] = useState("");
+    const [profileImage, setProfileImage] = useState("https://placehold.co/100x100"); // Default profile image
 
     const handleAddSkill = () => {
         if (newSkill.trim() !== "") {
@@ -34,39 +35,59 @@ const ProfilePage = () => {
         setSkills(skills.filter((_, i) => i !== index));
     };
 
+    const handleImageChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProfileImage(reader.result); // Update the profile image with the selected file
+            };
+            reader.readAsDataURL(file); // Convert the image to base64 string
+        }
+    };
     return (
         <div className="bg-white min-h-screen mt-5 flex flex-col p-6 md:max-w-6xl mx-auto border rounded-lg">
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-                <div className="relative">
+            <div className="flex items-center mb-4">
+            <div className="relative">
                     <img
-                        src="https://placehold.co/100x100"
+                        src={profileImage} // Use the state for the profile image
                         alt="Profile picture"
                         className="rounded-full w-20 h-20"
+                        onError={(e) => e.target.src = "https://placehold.co/100x100"} // Fallback to placeholder if image is missing
                     />
+
                     <FontAwesomeIcon
                         icon={faEdit}
-                        className="absolute bottom-0 left-0 bg-white p-1 text-green-500 rounded-full cursor-pointer"
-                        onClick={() => alert("Update Profile Image")}
+                        className="absolute bottom-0 right-0 bg-white p-1 text-green-500 rounded-full cursor-pointer"
+                        onClick={() => document.getElementById("imageUpload").click()} // Trigger file input when icon is clicked
+                    />
+                    <input
+                        id="imageUpload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden" // Hide the file input element
+                        onChange={handleImageChange} // Handle image selection
                     />
                 </div>
-                <div className="flex flex-col md:flex-row items-center gap-4">
+                <div className="flex ms-10 justify-between items-center">
                     <div>
                         <h1 className="text-2xl font-bold">Shubham K.</h1>
-                        <p className="text-gray-600">Pune, India – 11:35 pm local time</p>
-                        <p className="text-gray-600 mt-2">Phone: +91 1234567890</p>
+                        <p className="text-gray-600">Pune, India</p>
+                        <p className="text-gray-600 mt-1">Phone: +91 1234567890</p>
                         <p className="text-gray-600">Email: example@example.com</p>
                     </div>
-                    <div className="flex gap-2">
-                        <button className="border border-green-500 text-green-500 px-4 py-2 rounded-lg">
-                            <FontAwesomeIcon icon={faEye} /> See public view
-                        </button>
-                        <button className="bg-green-500 text-white px-4 py-2 rounded-lg">
-                            <FontAwesomeIcon icon={faCog} /> Profile settings
+
+                </div>
+
+                
+                <div className="ml-auto flex justify-center">
+                        <button className="bg-green-500 text-white px-6 py-2 rounded-lg">
+                            Update Details
                         </button>
                     </div>
-                </div>
             </div>
+
 
             {/* Bio and Skills Section */}
             <div className="flex flex-col md:flex-row mb-4 gap-4">
@@ -123,69 +144,73 @@ const ProfilePage = () => {
             </div>
 
             {/* Dialog for Bio */}
-            {showBioDialog && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-                        <h2 className="text-xl font-bold mb-4">Edit Bio</h2>
-                        <textarea
-                            className="w-full p-2 border rounded-lg mb-4"
-                            value={bio}
-                            onChange={(e) => setBio(e.target.value)}
-                            onInput={(e) => {
-                                e.target.style.height = "auto"; // Reset height to recalculate
-                                e.target.style.height = `${e.target.scrollHeight}px`; // Set height based on scroll height
-                            }}
-                            style={{ overflow: "hidden" }} // Prevent unnecessary scrollbars
-                        ></textarea>
+            {
+                showBioDialog && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+                            <h2 className="text-xl font-bold mb-4">Edit Bio</h2>
+                            <textarea
+                                className="w-full p-2 border rounded-lg mb-4"
+                                value={bio}
+                                onChange={(e) => setBio(e.target.value)}
+                                onInput={(e) => {
+                                    e.target.style.height = "auto"; // Reset height to recalculate
+                                    e.target.style.height = `${e.target.scrollHeight}px`; // Set height based on scroll height
+                                }}
+                                style={{ overflow: "hidden" }} // Prevent unnecessary scrollbars
+                            ></textarea>
 
-                        <div className="flex justify-end gap-2">
-                            <button
-                                className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-                                onClick={() => setShowBioDialog(false)}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className="bg-green-500 text-white px-4 py-2 rounded-lg"
-                                onClick={() => setShowBioDialog(false)}
-                            >
-                                Save
-                            </button>
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                                    onClick={() => setShowBioDialog(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                                    onClick={() => setShowBioDialog(false)}
+                                >
+                                    Save
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Dialog for Skills */}
-            {showSkillsDialog && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-                        <h2 className="text-xl font-bold mb-4">Edit Skills</h2>
-                        <input
-                            type="text"
-                            className="w-full p-2 border rounded-lg mb-4"
-                            value={newSkill}
-                            placeholder="Add new skill"
-                            onChange={(e) => setNewSkill(e.target.value)}
-                        />
-                        <button
-                            className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
-                            onClick={handleAddSkill}
-                        >
-                            <FontAwesomeIcon icon={faPlus} /> Add Skill
-                        </button>
-                        <div className="flex justify-end gap-2">
+            {
+                showSkillsDialog && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+                            <h2 className="text-xl font-bold mb-4">Edit Skills</h2>
+                            <input
+                                type="text"
+                                className="w-full p-2 border rounded-lg mb-4"
+                                value={newSkill}
+                                placeholder="Add new skill"
+                                onChange={(e) => setNewSkill(e.target.value)}
+                            />
                             <button
-                                className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-                                onClick={() => setShowSkillsDialog(false)}
+                                className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
+                                onClick={handleAddSkill}
                             >
-                                Close
+                                <FontAwesomeIcon icon={faPlus} /> Add Skill
                             </button>
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                                    onClick={() => setShowSkillsDialog(false)}
+                                >
+                                    Close
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 
