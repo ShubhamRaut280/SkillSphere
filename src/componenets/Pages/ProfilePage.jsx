@@ -11,6 +11,7 @@ import {
 const ProfilePage = () => {
     const [showBioDialog, setShowBioDialog] = useState(false);
     const [showSkillsDialog, setShowSkillsDialog] = useState(false);
+    const [showEditDetailsDialog, setShowEditDetailsDialog] = useState(false); // Dialog state
     const [bio, setBio] = useState(
         "I’m a developer experienced in building websites for small and medium-sized businesses."
     );
@@ -22,7 +23,10 @@ const ProfilePage = () => {
         "SEO",
     ]);
     const [newSkill, setNewSkill] = useState("");
-    const [profileImage, setProfileImage] = useState("https://placehold.co/100x100"); // Default profile image
+    const [profileImage, setProfileImage] = useState("https://placehold.co/100x100");
+    const [name, setName] = useState("Shubham K.");
+    const [phone, setPhone] = useState("+91 1234567890");
+    const [location, setLocation] = useState("Pune, India");
 
     const handleAddSkill = () => {
         if (newSkill.trim() !== "") {
@@ -40,54 +44,66 @@ const ProfilePage = () => {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setProfileImage(reader.result); // Update the profile image with the selected file
+                setProfileImage(reader.result);
             };
-            reader.readAsDataURL(file); // Convert the image to base64 string
+            reader.readAsDataURL(file);
         }
     };
+
+    const editDetails = () => {
+        // You can perform validation or send updated details to the server here.
+        console.log("Updated details:", { name, phone, location });
+        setShowEditDetailsDialog(false); // Close the dialog after updating details
+    };
+
     return (
         <div className="bg-white min-h-screen mt-5 flex flex-col p-6 md:max-w-6xl mx-auto border rounded-lg">
             {/* Header Section */}
             <div className="flex items-center mb-4">
-            <div className="relative">
+                <div className="relative">
                     <img
-                        src={profileImage} // Use the state for the profile image
+                        src={profileImage}
                         alt="Profile picture"
                         className="rounded-full w-20 h-20"
-                        onError={(e) => e.target.src = "https://placehold.co/100x100"} // Fallback to placeholder if image is missing
+                        onError={(e) => (e.target.src = "https://placehold.co/100x100")}
                     />
-
                     <FontAwesomeIcon
                         icon={faEdit}
                         className="absolute bottom-0 right-0 bg-white p-1 text-green-500 rounded-full cursor-pointer"
-                        onClick={() => document.getElementById("imageUpload").click()} // Trigger file input when icon is clicked
+                        onClick={() => document.getElementById("imageUpload").click()}
                     />
                     <input
                         id="imageUpload"
                         type="file"
                         accept="image/*"
-                        className="hidden" // Hide the file input element
-                        onChange={handleImageChange} // Handle image selection
+                        className="hidden"
+                        onChange={handleImageChange}
                     />
                 </div>
                 <div className="flex ms-10 justify-between items-center">
                     <div>
-                        <h1 className="text-2xl font-bold">Shubham K.</h1>
-                        <p className="text-gray-600">Pune, India</p>
-                        <p className="text-gray-600 mt-1">Phone: +91 1234567890</p>
+                        <h1 className="text-2xl font-bold">
+                            {name}
+                        </h1>
+                        <p className="text-gray-600">
+                            {location}
+                        </p>
+                        <p className="text-gray-600 mt-1">
+                            Phone: {phone}
+                        </p>
+
                         <p className="text-gray-600">Email: example@example.com</p>
                     </div>
-
                 </div>
-
-                
                 <div className="ml-auto flex justify-center">
-                        <button className="bg-green-500 text-white px-6 py-2 rounded-lg">
-                            Update Details
-                        </button>
-                    </div>
+                    <button
+                        className="bg-green-500 text-white px-6 py-2 rounded-lg"
+                        onClick={() => setShowEditDetailsDialog(true)} // Open the edit details dialog
+                    >
+                        Update Details
+                    </button>
+                </div>
             </div>
-
 
             {/* Bio and Skills Section */}
             <div className="flex flex-col md:flex-row mb-4 gap-4">
@@ -144,73 +160,119 @@ const ProfilePage = () => {
             </div>
 
             {/* Dialog for Bio */}
-            {
-                showBioDialog && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-                            <h2 className="text-xl font-bold mb-4">Edit Bio</h2>
-                            <textarea
-                                className="w-full p-2 border rounded-lg mb-4"
-                                value={bio}
-                                onChange={(e) => setBio(e.target.value)}
-                                onInput={(e) => {
-                                    e.target.style.height = "auto"; // Reset height to recalculate
-                                    e.target.style.height = `${e.target.scrollHeight}px`; // Set height based on scroll height
-                                }}
-                                style={{ overflow: "hidden" }} // Prevent unnecessary scrollbars
-                            ></textarea>
+            {showBioDialog && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+                        <h2 className="text-xl font-bold mb-4">Edit Bio</h2>
+                        <textarea
+                            className="w-full p-2 border rounded-lg mb-4"
+                            value={bio}
+                            onChange={(e) => setBio(e.target.value)}
+                            onInput={(e) => {
+                                e.target.style.height = "auto";
+                                e.target.style.height = `${e.target.scrollHeight}px`;
+                            }}
+                            style={{ overflow: "hidden" }}
+                        ></textarea>
 
-                            <div className="flex justify-end gap-2">
-                                <button
-                                    className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-                                    onClick={() => setShowBioDialog(false)}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    className="bg-green-500 text-white px-4 py-2 rounded-lg"
-                                    onClick={() => setShowBioDialog(false)}
-                                >
-                                    Save
-                                </button>
-                            </div>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                                onClick={() => setShowBioDialog(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                                onClick={() => setShowBioDialog(false)}
+                            >
+                                Save
+                            </button>
                         </div>
                     </div>
-                )
-            }
+                </div>
+            )}
 
             {/* Dialog for Skills */}
-            {
-                showSkillsDialog && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-                            <h2 className="text-xl font-bold mb-4">Edit Skills</h2>
-                            <input
-                                type="text"
-                                className="w-full p-2 border rounded-lg mb-4"
-                                value={newSkill}
-                                placeholder="Add new skill"
-                                onChange={(e) => setNewSkill(e.target.value)}
-                            />
+            {showSkillsDialog && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+                        <h2 className="text-xl font-bold mb-4">Edit Skills</h2>
+                        <input
+                            type="text"
+                            className="w-full p-2 border rounded-lg mb-4"
+                            value={newSkill}
+                            placeholder="Add new skill"
+                            onChange={(e) => setNewSkill(e.target.value)}
+                        />
+                        <button
+                            className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
+                            onClick={handleAddSkill}
+                        >
+                            <FontAwesomeIcon icon={faPlus} /> Add Skill
+                        </button>
+                        <div className="flex justify-end gap-2">
                             <button
-                                className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
-                                onClick={handleAddSkill}
+                                className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                                onClick={() => setShowSkillsDialog(false)}
                             >
-                                <FontAwesomeIcon icon={faPlus} /> Add Skill
+                                Close
                             </button>
-                            <div className="flex justify-end gap-2">
-                                <button
-                                    className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-                                    onClick={() => setShowSkillsDialog(false)}
-                                >
-                                    Close
-                                </button>
-                            </div>
                         </div>
                     </div>
-                )
-            }
-        </div >
+                </div>
+            )}
+
+            {/* Dialog for Editing Details */}
+            {showEditDetailsDialog && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+                        <h2 className="text-xl font-bold mb-4">Edit Details</h2>
+                        <div className="mb-4">
+                            <label className="block mb-2">Name</label>
+                            <input
+                                type="text"
+                                className="w-full p-2 border rounded-lg"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block mb-2">Phone</label>
+                            <input
+                                type="text"
+                                className="w-full p-2 border rounded-lg"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block mb-2">Location</label>
+                            <input
+                                type="text"
+                                className="w-full p-2 border rounded-lg"
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                                onClick={() => setShowEditDetailsDialog(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                                onClick={editDetails}
+                            >
+                                Update Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 
