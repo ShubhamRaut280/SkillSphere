@@ -52,6 +52,7 @@ const ProfilePage = () => {
     const [showBioDialog, setShowBioDialog] = useState(false);
     const [showSkillsDialog, setShowSkillsDialog] = useState(false);
     const [showEditDetailsDialog, setShowEditDetailsDialog] = useState(false); // Dialog state
+    const [hourlyRate, setHourlyRate] = useState("");  // Add state for hourly rate
 
 
 
@@ -97,13 +98,14 @@ const ProfilePage = () => {
                 setSkills(skillsArray)
                 setPhone(userdata.phoneNumber)
                 setLocation(userdata.address)
+                setHourlyRate(userdata.hourlyRate)
 
                 console.log(userdata)
             }
         }
 
         fetchData()
-    })
+    }, [])
 
 
     const handleAddSkill = () => {
@@ -130,7 +132,7 @@ const ProfilePage = () => {
 
     const editDetails = () => {
         // You can perform validation or send updated details to the server here.
-        console.log("Updated details:", { name, phone, location });
+        console.log("Updated details:", { name, phone, location, hourlyRate });
         setShowEditDetailsDialog(false); // Close the dialog after updating details
     };
 
@@ -193,7 +195,7 @@ const ProfilePage = () => {
                         {/* Hourly Rate Section */}
                         <div className="flex items-center gap-2 mb-4">
                             <span className="bg-purple-100 text-purple-700 font-semibold py-1 px-3 rounded-lg text-lg shadow-sm">
-                                ${user.hourlyRate}/hr
+                                ${hourlyRate}/hr
                             </span>
                             <span className="text-gray-600 font-medium">Hourly Rate</span>
                         </div>
@@ -368,6 +370,18 @@ const ProfilePage = () => {
                                 onChange={(e) => setLocation(e.target.value)}
                             />
                         </div>
+                        <div className="mb-4">
+                                <label htmlFor="hourlyRate" className="block text-sm font-medium">Hourly Rate</label>
+                                <input
+                                    type="number"
+                                    id="hourlyRate"
+                                    className="w-full p-2 border rounded"
+                                    value={hourlyRate}
+                                    onChange={(e) => setHourlyRate(e.target.value)}
+                                    min="0"
+                                    step="0.01"
+                                />
+                            </div>
                         <div className="flex justify-end gap-2">
                             <button
                                 className="bg-gray-500 text-white px-4 py-2 rounded-lg"
