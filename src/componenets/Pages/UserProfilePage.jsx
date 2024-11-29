@@ -61,9 +61,11 @@ const UserProfilePage = () => {
             } catch (error) {
                 console.error("Error fetching user data:", error);
             }
-
-            
+            finally{
+                
             setLoading(false); // Set loading to true
+            }
+            
         };
 
         const fetchHistory = async () => {
@@ -135,10 +137,11 @@ const UserProfilePage = () => {
                 }
             } catch (error) {
                 console.error("Error fetching job history:", error);
+            }finally{
+            setLoading(false); // Set loading to true
             }
 
             
-            setLoading(false); // Set loading to true
         };
 
 
@@ -231,6 +234,13 @@ const UserProfilePage = () => {
 
     return (
         <div>
+        {loading ? (
+            <div className="flex justify-center items-center min-h-screen">
+                <CircularProgress />
+            </div>
+        ) :(
+
+            <div>
             <button
                 className="flex items-center gap-2 text-white bg-purple-500 m-5 px-5 py-3 rounded-lg shadow hover:bg-purple-800 transition"
                 onClick={handleBackClick} // Replace with your back navigation logic
@@ -424,6 +434,10 @@ const UserProfilePage = () => {
             )}
         </div>
         </div >
+    
+        )
+        }
+        </div>
     );
 };
 
