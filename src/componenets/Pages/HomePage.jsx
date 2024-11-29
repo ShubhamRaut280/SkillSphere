@@ -43,7 +43,7 @@ const HomePage = () => {
 
   // Handle profile image click to navigate to profile page
   const handleProfileClick = () => {
-    navigate('/profile');
+    localStorage.getItem('role') === 'user' ? navigate('/userprofile') : navigate('/profile');
 
   };
 
@@ -178,13 +178,21 @@ const HomePage = () => {
               </div>
               <div className="flex-shrink-0">
 
-                <Link to="/profile">
+               {
+                localStorage.getItem('role') === 'user' ? ( <Link to="/userprofile">
                   <img
                     src={userImg}
                     alt="Current logged-in user"
                     className="rounded-full w-10 h-10"
                   />
-                </Link>
+                </Link>) : ( <Link to="/profile">
+                  <img
+                    src={userImg}
+                    alt="Current logged-in user"
+                    className="rounded-full w-10 h-10"
+                  />
+                </Link>)
+               }
 
               </div>
 

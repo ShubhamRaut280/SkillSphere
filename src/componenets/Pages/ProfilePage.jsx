@@ -301,6 +301,23 @@ const ProfilePage = () => {
         setShowEditDetailsDialog(false); // Close the dialog after updating details
     };
 
+    const handleLogout = () =>{
+        console.log("preseing   ")
+        setLoading(true)
+        auth.signOut()
+        .then(() => {
+            setLoading(false)
+          navigate('/');
+          console.log('Signed Out');
+          localStorage.clear();
+
+        })
+        .catch((error) => {
+            setLoading(false)
+          console.log(error)
+          alert("Unable to logut, please try again");
+        });
+    }
 
 
     return (<div>
@@ -390,12 +407,19 @@ const ProfilePage = () => {
                             </div>
 
                         </div>
-                        <div className="ml-auto flex justify-center">
+                        <div className="ml-auto grid grid-col-1 gap-4 justify-center">
                             <button
-                                className="bg-purple-500 text-white px-6 py-2 rounded-lg"
+                                className="bg-purple-500 hover:bg-purple-400 font-semibold text-white px-6 py-2 rounded-lg"
                                 onClick={() => setShowEditDetailsDialog(true)} // Open the edit details dialog
                             >
                                 Update Details
+                            </button>
+
+                            <button
+                                className="bg-red-500 hover:bg-red-400 font-semibold text-white px-6 py-2 rounded-lg"
+                                onClick={handleLogout} // Open the edit details dialog
+                            >
+                                Logout
                             </button>
                         </div>
                     </div>

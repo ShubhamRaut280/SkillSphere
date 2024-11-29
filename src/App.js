@@ -25,7 +25,8 @@ function App() {
           />
           {/* Full-screen HomePage */}
           <Route path="/home" element={<HomePage />} />
-          <Route path="/profile" element={localStorage.getItem('role') === 'freelance' ? <ProfilePage /> : <UserProfilePage />} />
+          <Route path="/profile" element={ <ProfilePage />} />
+          <Route path="/userprofile" element={ <UserProfilePage />} />
         </Routes>
       </div>
     </Router>

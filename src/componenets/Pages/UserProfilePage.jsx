@@ -7,6 +7,7 @@ import {
     faCog,
     faPlus,
 } from "@fortawesome/free-solid-svg-icons";
+import CircularProgress from '@mui/material/CircularProgress'; // If using Material-UI
 
 import { auth, db } from '../../firebaseConfig';
 import { doc, getDoc, getFirestore, updateDoc, query, getDocs, collection, where } from 'firebase/firestore';
@@ -19,6 +20,7 @@ const UserProfilePage = () => {
     const [jobs, setJobs] = useState([])
 
     const navigate = useNavigate(); // Initialize the navigate function
+    const [loading, setLoading] = useState(true);
 
 
     const [bio, setBio] = useState(
@@ -34,19 +36,21 @@ const UserProfilePage = () => {
 
     useEffect(() => {
         const fetchData = async () => {
+            
+            setLoading(true); // Set loading to true
             try {
                 const userDocRef = doc(db, 'users', localStorage.getItem('userId'));
                 const userDocSnapshot = await getDoc(userDocRef);
-    
+
                 if (userDocSnapshot.exists()) {
                     const userdata = userDocSnapshot.data();
-    
+
                     setUser(userdata);
                     setName(userdata.name || '');
                     setBio(userdata.bio || '');
                     setEmail(userdata.email || '');
-    
-    
+
+
                     setPhone(userdata.phoneNumber || '');
                     setLocation(userdata.address || '');
                     setProfileImage(userdata.img || '');
@@ -57,9 +61,14 @@ const UserProfilePage = () => {
             } catch (error) {
                 console.error("Error fetching user data:", error);
             }
+
+            
+            setLoading(false); // Set loading to true
         };
-    
+
         const fetchHistory = async () => {
+            
+            setLoading(true); // Set loading to true
             try {
                 const jobRequestCollection = collection(db, "jobrequest");
                 const q = query(
@@ -67,44 +76,44 @@ const UserProfilePage = () => {
                     where("userId", "==", localStorage.getItem("userId"))
                 );
                 const querySnapshot = await getDocs(q);
-        
+
                 if (!querySnapshot.empty) {
                     const jobRequests = await Promise.all(
                         querySnapshot.docs.map(async (document) => {
                             const reqdata = document.data();
                             const recDocRef = doc(db, "users", reqdata.freelancerId);
                             const userSnap = await getDoc(recDocRef);
-    
+
                             if (userSnap.exists()) {
                                 const tempdata = userSnap.data();
-        
+
                                 // Check if the current time is within the job's start and end times
                                 const currentTime = new Date();
                                 const jobStartTime = new Date(reqdata.jobStartTime);
                                 const jobEndTime = new Date(reqdata.jobEndTime);
-        
+
                                 let jobStatus = reqdata.status || "Unknown";
-        
-                                
-                                if(jobStatus === 'accepted'){
+
+
+                                if (jobStatus === 'accepted') {
                                     if (
                                         currentTime >= jobStartTime &&
-                                        currentTime <= jobEndTime 
+                                        currentTime <= jobEndTime
                                     ) {
                                         jobStatus = "inProgress";
                                     }
 
                                     if (
-                                        currentTime > jobEndTime 
+                                        currentTime > jobEndTime
                                     ) {
                                         jobStatus = "completed";
                                     }
                                 }
 
-                                if(jobStatus === 'pending'){
+                                if (jobStatus === 'pending') {
                                     return null;
                                 }
-        
+
                                 return {
                                     projectName: tempdata.name || "Unnamed Project",
                                     projectDescription:
@@ -118,7 +127,7 @@ const UserProfilePage = () => {
                             }
                         })
                     );
-        
+
                     // Filter out null values (in case a referenced user document is missing)
                     setJobs(jobRequests.filter((request) => request !== null));
                 } else {
@@ -127,13 +136,16 @@ const UserProfilePage = () => {
             } catch (error) {
                 console.error("Error fetching job history:", error);
             }
+
+            
+            setLoading(false); // Set loading to true
         };
-        
-    
+
+
         fetchData();
         fetchHistory();
     }, []); // Dependency array intentionally left empty to run once
-    
+
 
 
     const handleImageChange = (event) => {
@@ -197,6 +209,24 @@ const UserProfilePage = () => {
         setShowEditDetailsDialog(false); // Close the dialog after updating details
     };
 
+    const handleLogout = () =>{
+        console.log("preseing   ")
+        setLoading(true)
+        auth.signOut()
+        .then(() => {
+            setLoading(false)
+          navigate('/');
+          console.log('Signed Out');
+          localStorage.clear();
+
+        })
+        .catch((error) => {
+            setLoading(false)
+          console.log(error)
+          alert("Unable to logut, please try again");
+        });
+    }
+
 
 
     return (
@@ -231,7 +261,7 @@ const UserProfilePage = () => {
                             onChange={handleImageChange}
                         />
                     </div>
-                    <div className="flex ms-10 justify-between items-center">
+                    <div className="flex ms-10 w-full justify-between items-center">
                         <div>
                             <div className="flex items-center gap-2">
                                 <div className="flex items-center text-2xl font-bold gap-1">
@@ -259,136 +289,141 @@ const UserProfilePage = () => {
                                     {email}
                                 </div>
                             </div>
-
-                        </div>
-
                     </div>
-                    <div className="ml-auto flex justify-center">
-                        <button
-                            className="bg-purple-500 text-white px-6 py-2 rounded-lg"
+                    <div className="ml-auto  grid grid-col-1 gap-4 justify-end">
+                    <button
+                            className="bg-purple-500 hover:bg-purple-400 font-semibold text-white px-6 py-2 rounded-lg"
                             onClick={() => setShowEditDetailsDialog(true)} // Open the edit details dialog
                         >
                             Update Details
                         </button>
+
+                        <button
+                            className="bg-red-500 hover:bg-red-400 font-semibold text-white px-6 py-2 rounded-lg"
+                            onClick={handleLogout} // Open the edit details dialog
+                        >
+                            Logout
+                        </button>
                     </div>
                 </div>
-
-                {/* Bio and Skills Section */}
-                <div className="flex flex-col md:flex-row mb-4 gap-4">
-                    <div className="flex-1 p-4 border rounded-lg relative">
-                        <h2 className="text-xl font-bold mb-2">Bio</h2>
-                        <p className="text-gray-700">{bio}</p>
-                        <FontAwesomeIcon
-                            icon={faEdit}
-                            className="absolute top-4 right-4 text-purple-500 cursor-pointer"
-                            onClick={() => setShowBioDialog(true)}
-                        />
-                    </div>
-                </div>
-
-                {/* Hiring History Section */}
-                <div className="border-t pt-4">
-                    <h2 className="text-xl font-bold mb-2">Hiring History</h2>
-                    <div className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {jobs.map((project, index) => (
-                            <ProjectCard
-                                key={index}
-                                projectName={project.projectName}
-                                projectDescription={project.projectDescription}
-                                status={project.status}
-                                cost={project.cost}
-                            />
-                        ))}
-                    </div>
-                </div>
-
-                {/* Dialog for Bio */}
-                {showBioDialog && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-                            <h2 className="text-xl font-bold mb-4">Edit Bio</h2>
-                            <textarea
-                                className="w-full p-2 border rounded-lg mb-4"
-                                value={bio}
-                                onChange={handleBioUpdate}
-                                onInput={(e) => {
-                                    e.target.style.height = "auto";
-                                    e.target.style.height = `${e.target.scrollHeight}px`;
-                                }}
-                                style={{ overflow: "hidden" }}
-                            ></textarea>
-
-                            <div className="flex justify-end gap-2">
-                                <button
-                                    className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-                                    onClick={() => setShowBioDialog(false)}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    className="bg-purple-500 text-white px-4 py-2 rounded-lg"
-                                    onClick={() => setShowBioDialog(false)}
-                                >
-                                    Save
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-
-                {/* Dialog for Editing Details */}
-                {showEditDetailsDialog && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-                            <h2 className="text-xl font-bold mb-4">Edit Details</h2>
-                            <div className="mb-4">
-                                <label className="block mb-2">Name</label>
-                                <input
-                                    type="text"
-                                    className="w-full p-2 border rounded-lg"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2">Phone</label>
-                                <input
-                                    type="text"
-                                    className="w-full p-2 border rounded-lg"
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2">Location</label>
-                                <input
-                                    type="text"
-                                    className="w-full p-2 border rounded-lg"
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                />
-                            </div>
-                          
-                            <div className="flex justify-end gap-2">
-                                <button
-                                    className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-                                    onClick={() => setShowEditDetailsDialog(false)}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    className="bg-purple-500 text-white px-4 py-2 rounded-lg"
-                                    onClick={editDetails}
-                                >
-                                    Update Details
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
+
+            {/* Bio and Skills Section */}
+            <div className="flex flex-col md:flex-row mb-4 gap-4">
+                <div className="flex-1 p-4 border rounded-lg relative">
+                    <h2 className="text-xl font-bold mb-2">Bio</h2>
+                    <p className="text-gray-700">{bio}</p>
+                    <FontAwesomeIcon
+                        icon={faEdit}
+                        className="absolute top-4 right-4 text-purple-500 cursor-pointer"
+                        onClick={() => setShowBioDialog(true)}
+                    />
+                </div>
+            </div>
+
+            {/* Hiring History Section */}
+            <div className="border-t pt-4">
+                <h2 className="text-xl font-bold mb-2">Hiring History</h2>
+                <div className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {jobs.map((project, index) => (
+                        <ProjectCard
+                            key={index}
+                            projectName={project.projectName}
+                            projectDescription={project.projectDescription}
+                            status={project.status}
+                            cost={project.cost}
+                        />
+                    ))}
+                </div>
+            </div>
+
+            {/* Dialog for Bio */}
+            {showBioDialog && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+                        <h2 className="text-xl font-bold mb-4">Edit Bio</h2>
+                        <textarea
+                            className="w-full p-2 border rounded-lg mb-4"
+                            value={bio}
+                            onChange={handleBioUpdate}
+                            onInput={(e) => {
+                                e.target.style.height = "auto";
+                                e.target.style.height = `${e.target.scrollHeight}px`;
+                            }}
+                            style={{ overflow: "hidden" }}
+                        ></textarea>
+
+                        <div className="flex justify-end gap-2">
+                            <button
+                                className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                                onClick={() => setShowBioDialog(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="bg-purple-500 text-white px-4 py-2 rounded-lg"
+                                onClick={() => setShowBioDialog(false)}
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+            {/* Dialog for Editing Details */}
+            {showEditDetailsDialog && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+                        <h2 className="text-xl font-bold mb-4">Edit Details</h2>
+                        <div className="mb-4">
+                            <label className="block mb-2">Name</label>
+                            <input
+                                type="text"
+                                className="w-full p-2 border rounded-lg"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block mb-2">Phone</label>
+                            <input
+                                type="text"
+                                className="w-full p-2 border rounded-lg"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block mb-2">Location</label>
+                            <input
+                                type="text"
+                                className="w-full p-2 border rounded-lg"
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="flex justify-end gap-2">
+                            <button
+                                className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                                onClick={() => setShowEditDetailsDialog(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="bg-purple-500 text-white px-4 py-2 rounded-lg"
+                                onClick={editDetails}
+                            >
+                                Update Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
+        </div >
     );
 };
 
