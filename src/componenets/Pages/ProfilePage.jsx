@@ -107,17 +107,43 @@ const ProfilePage = () => {
         fetchData()
     }, [])
 
-
-    const handleAddSkill = () => {
+    const handleAddSkill = async () => {
         if (newSkill.trim() !== "") {
-            setSkills([...skills, newSkill]);
-            setNewSkill("");
+            // Add the new skill to the state and update it immediately
+            const updatedSkills = [...skills, newSkill];
+            setSkills(updatedSkills);
+            setNewSkill(""); // Clear the new skill input
+    
+            // Create a comma-separated string
+            const tempskills = updatedSkills.join(',');
+    
+            try {
+                const userDocRef = doc(db, "users", localStorage.getItem('userId'));
+                await updateDoc(userDocRef, { 'skills': tempskills });
+                console.log("Skills updated successfully.");
+            } catch (error) {
+                console.error("Error updating skills:", error);
+            }
         }
     };
-
-    const handleDeleteSkill = (index) => {
-        setSkills(skills.filter((_, i) => i !== index));
+    
+    const handleDeleteSkill = async (index) => {
+        // Create a new skills array after removing the skill at the specified index
+        const updatedSkills = skills.filter((_, i) => i !== index);
+        setSkills(updatedSkills); // Update the state with the new skills array
+    
+        // Create a comma-separated string of the updated skills
+        const tempskills = updatedSkills.join(',');
+    
+        try {
+            const userDocRef = doc(db, "users", localStorage.getItem('userId'));
+            await updateDoc(userDocRef, { 'skills': tempskills });
+            console.log("Skills updated successfully.");
+        } catch (error) {
+            console.error("Error updating skills:", error);
+        }
     };
+    
 
     const handleImageChange =  (event) => {
         const file = event.target.files[0];
@@ -143,9 +169,23 @@ const ProfilePage = () => {
         }
     };
 
-    const editDetails = () => {
+    const editDetails = async () => {
         // You can perform validation or send updated details to the server here.
         console.log("Updated details:", { name, phone, location, hourlyRate });
+        try{
+            const userDocRef = doc(db, "users", localStorage.getItem('userId'));
+
+            await updateDoc(userDocRef, { 
+                'name' : name,
+                'phoneNumber' : phone,
+                'address' : location,
+                'hourlyRate' : hourlyRate
+             });
+    
+            console.log(`Details updated successfully.`);
+        } catch (error) {
+            console.error("Error updating details", error);
+        }
         setShowEditDetailsDialog(false); // Close the dialog after updating details
     };
 
