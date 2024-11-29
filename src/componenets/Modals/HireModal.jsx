@@ -7,7 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const HireModal = ({ freelancer, onClose }) => {
   const [jobDescription, setJobDescription] = useState("");
-  const [status, setStatus] = useState("Pending");
+  const [status, setStatus] = useState("pending");
   const [userId, setUserId] = useState(null);
   const [userEmail, setUserEmail] = useState(""); // User email state
   const [jobStartTime, setJobStartTime] = useState("");

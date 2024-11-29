@@ -71,7 +71,7 @@ const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
   useEffect(() => {
     if (!userId) return;
 
-    const q = query(collection(db, "jobrequest"), where("freelancerId", "==", userId));
+    const q = query(collection(db, "jobrequest"), where("freelancerId", "==", localStorage.getItem('userId')));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const requests = querySnapshot.docs.map((doc) => ({
@@ -148,11 +148,11 @@ const NotificationDrawer = ({ isOpen, toggleDrawer }) => {
             <ul>
               {jobRequests.map((request) => (
                 <li key={request.id}>
+                  {console.log(`request data :${request.jobDescription} ${request.status}`)}
                   <NotificationCard
                     jobRequest={request}
                     onAccept={() => handleStatusUpdate(request.id, "accepted")}
                     onReject={() => handleStatusUpdate(request.id, "rejected")}
-                    isResponded={request.status === "accepted" || request.status === "rejected"}
                   />
                 </li>
               ))}
