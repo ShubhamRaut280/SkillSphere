@@ -169,6 +169,17 @@ const ProfilePage = () => {
         }
     };
 
+    const handleBioUpdate = async (e) => {
+        const bio = e.target.value
+        setBio(bio)
+        try {
+            const userDocRef = doc(db, "users", localStorage.getItem('userId'));
+            await updateDoc(userDocRef, { 'bio': bio });
+            console.log("Bio updated successfully.");
+            } catch (error) {
+                console.error("Error updating bio:", error);
+                }    }
+
     const editDetails = async () => {
         // You can perform validation or send updated details to the server here.
         console.log("Updated details:", { name, phone, location, hourlyRate });
@@ -335,7 +346,7 @@ const ProfilePage = () => {
                         <textarea
                             className="w-full p-2 border rounded-lg mb-4"
                             value={bio}
-                            onChange={(e) => setBio(e.target.value)}
+                            onChange={handleBioUpdate}
                             onInput={(e) => {
                                 e.target.style.height = "auto";
                                 e.target.style.height = `${e.target.scrollHeight}px`;
