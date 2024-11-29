@@ -11,6 +11,7 @@ import {
 import { auth, db } from '../../firebaseConfig';
 import { doc, getDoc, getFirestore, updateDoc } from 'firebase/firestore';
 import { useNavigate } from "react-router-dom";
+import ProjectCard from "../Cards/ProjectCard";
 
 const renderStars = (rating) => {
     const fullStars = Math.floor(rating);  // Full stars for the integer part
@@ -171,7 +172,7 @@ const ProfilePage = () => {
         }
     };
 
-    
+
 
     const handleBackClick = () => {
         navigate("/home"); // Navigate to the homepage
@@ -209,6 +210,37 @@ const ProfilePage = () => {
         setShowEditDetailsDialog(false); // Close the dialog after updating details
     };
 
+    const projects = [
+        {
+            projectName: "Project Alpha",
+            projectDescription: "Developed a responsive e-commerce website.",
+            hiredBy: "John Doe",
+            status: "completed",
+            cost : '80'
+        },
+        {
+            projectName: "Project Beta",
+            projectDescription: "Created a real-time chat application.",
+            hiredBy: "Jane Smith",
+            status: "inProgress",
+            cost : '80'
+        },
+        {
+            projectName: "Project Gamma",
+            projectDescription: "Built an AI-driven recommendation system.",
+            hiredBy: "Alice Johnson",
+            status: "accepted",
+            cost : '80'
+        },
+        {
+            projectName: "Project Delta",
+            projectDescription: "Designed a new logo and branding materials.",
+            hiredBy: "Bob Brown",
+            status: "rejected",
+            cost : '80'
+        },
+    ];
+
 
     return (
         <div>
@@ -217,8 +249,8 @@ const ProfilePage = () => {
                 onClick={handleBackClick} // Replace with your back navigation logic
             >
                 <FontAwesomeIcon icon={faArrowLeft} />
-                
-            </button>            
+
+            </button>
             <div className="bg-white min-h-screen mt-5 flex flex-col p-6 md:max-w-6xl mx-auto border rounded-lg">
                 {/* Header Section */}
                 <div className="flex items-center mb-4">
@@ -346,12 +378,16 @@ const ProfilePage = () => {
                 {/* Hiring History Section */}
                 <div className="border-t pt-4">
                     <h2 className="text-xl font-bold mb-2">Hiring History</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {[...Array(6)].map((_, i) => (
-                            <div key={i} className="p-4 border rounded-lg">
-                                <h3 className="text-lg font-bold mb-2">Project {i + 1}</h3>
-                                <p className="text-gray-700">Description of project {i + 1}.</p>
-                            </div>
+                    <div className="p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {projects.map((project, index) => (
+                            <ProjectCard
+                                key={index}
+                                projectName={project.projectName}
+                                projectDescription={project.projectDescription}
+                                hiredBy={project.hiredBy}
+                                status={project.status}
+                                cost={project.cost}
+                            />
                         ))}
                     </div>
                 </div>
