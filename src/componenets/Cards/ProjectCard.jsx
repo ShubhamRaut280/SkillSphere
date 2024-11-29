@@ -2,7 +2,8 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faHourglassHalf, faThumbsUp, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 
-const ProjectCard = ({ projectName, projectDescription, hiredBy, status, cost }) => {
+const ProjectCard = ({ projectName, projectDescription,  status, cost }) => {
+    console.log(` status is : ${status}`)
     // Map status to corresponding icons and styles
     const statusDetails = {
         completed: { icon: faCheckCircle, color: "text-green-500", label: "Completed" },
@@ -26,11 +27,6 @@ const ProjectCard = ({ projectName, projectDescription, hiredBy, status, cost })
             {/* Project Description */}
             <p className="text-gray-600 mb-4">{projectDescription}</p>
 
-            {/* Hired By Section */}
-            <div className="flex items-center mb-4">
-                <span className="text-gray-500 font-medium mr-2">Hired By:</span>
-                <span className="text-gray-800 font-semibold">{hiredBy}</span>
-            </div>
 
             {/* Status Section */}
             <div className="flex items-center">

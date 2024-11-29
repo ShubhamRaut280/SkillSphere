@@ -9,7 +9,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { auth, db } from '../../firebaseConfig';
-import { doc, getDoc, getFirestore, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, getFirestore, updateDoc, query, getDocs, collection, where } from 'firebase/firestore';
 import { useNavigate } from "react-router-dom";
 import ProjectCard from "../Cards/ProjectCard";
 
@@ -54,6 +54,7 @@ const ProfilePage = () => {
     const [showSkillsDialog, setShowSkillsDialog] = useState(false);
     const [showEditDetailsDialog, setShowEditDetailsDialog] = useState(false); // Dialog state
     const [hourlyRate, setHourlyRate] = useState("");  // Add state for hourly rate
+    const [jobs, setJobs] = useState([])
 
     const navigate = useNavigate(); // Initialize the navigate function
 
@@ -80,35 +81,109 @@ const ProfilePage = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const userDocRef = doc(db, 'users', localStorage.getItem('userId'));
-            const userDocSnapshot = await getDoc(userDocRef);
-            if (userDocSnapshot.exists()) {
-
-                const userdata = userDocSnapshot.data()
-
-                setUser(userdata)
-                setName(userdata.name)
-                setBio(userdata.bio)
-                setEmail(userdata.email)
-
-                const rating = parseFloat(userdata.rating) || 0;  // Ensure rating is a number
-                setRating(rating)
-
-                const skillsArray = userdata.skills
-                    ? userdata.skills.split(",").map((skill) => skill.trim())
-                    : [];
-                setSkills(skillsArray)
-                setPhone(userdata.phoneNumber)
-                setLocation(userdata.address)
-                setHourlyRate(userdata.hourlyRate)
-                setProfileImage(userdata.img)
-
-                console.log(userdata)
+            try {
+                const userDocRef = doc(db, 'users', localStorage.getItem('userId'));
+                const userDocSnapshot = await getDoc(userDocRef);
+    
+                if (userDocSnapshot.exists()) {
+                    const userdata = userDocSnapshot.data();
+    
+                    setUser(userdata);
+                    setName(userdata.name || '');
+                    setBio(userdata.bio || '');
+                    setEmail(userdata.email || '');
+    
+                    const rating = parseFloat(userdata.rating) || 0;
+                    setRating(rating);
+    
+                    const skillsArray = userdata.skills
+                        ? userdata.skills.split(',').map((skill) => skill.trim())
+                        : [];
+                    setSkills(skillsArray);
+    
+                    setPhone(userdata.phoneNumber || '');
+                    setLocation(userdata.address || '');
+                    setHourlyRate(userdata.hourlyRate || 0);
+                    setProfileImage(userdata.img || '');
+                    console.log(userdata);
+                } else {
+                    console.log("No user document found");
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
             }
-        }
-
-        fetchData()
-    }, [])
+        };
+    
+        const fetchHistory = async () => {
+            try {
+                const jobRequestCollection = collection(db, "jobrequest");
+                const q = query(
+                    jobRequestCollection,
+                    where("freelancerId", "==", localStorage.getItem("userId"))
+                );
+                const querySnapshot = await getDocs(q);
+        
+                if (!querySnapshot.empty) {
+                    const jobRequests = await Promise.all(
+                        querySnapshot.docs.map(async (document) => {
+                            const reqdata = document.data();
+                            const recDocRef = doc(db, "users", reqdata.userId);
+                            const userSnap = await getDoc(recDocRef);
+        
+                            if (userSnap.exists()) {
+                                const tempdata = userSnap.data();
+        
+                                // Check if the current time is within the job's start and end times
+                                const currentTime = new Date();
+                                const jobStartTime = new Date(reqdata.jobStartTime);
+                                const jobEndTime = new Date(reqdata.jobEndTime);
+        
+                                let jobStatus = reqdata.status || "Unknown";
+        
+                                if (
+                                    currentTime >= jobStartTime &&
+                                    currentTime <= jobEndTime
+                                ) {
+                                    jobStatus = "inProgress";
+        
+                                    // Update the status in Firestore
+                                    const jobRef = doc(db, "jobrequest", document.id);
+                                    await updateDoc(
+                                        jobRef,
+                                        { status: "inProgress" },
+                                        { merge: true }
+                                    );
+                                }
+        
+                                return {
+                                    projectName: tempdata.name || "Unnamed Project",
+                                    projectDescription:
+                                        reqdata.jobDescription ||
+                                        "No description provided",
+                                    status: jobStatus,
+                                    cost: reqdata.totalRevenue || 0,
+                                };
+                            } else {
+                                return null;
+                            }
+                        })
+                    );
+        
+                    // Filter out null values (in case a referenced user document is missing)
+                    setJobs(jobRequests.filter((request) => request !== null));
+                } else {
+                    console.log("No job requests found for this freelancer.");
+                }
+            } catch (error) {
+                console.error("Error fetching job history:", error);
+            }
+        };
+        
+    
+        fetchData();
+        fetchHistory();
+    }, []); // Dependency array intentionally left empty to run once
+    
 
     const handleAddSkill = async () => {
         if (newSkill.trim() !== "") {
@@ -210,36 +285,6 @@ const ProfilePage = () => {
         setShowEditDetailsDialog(false); // Close the dialog after updating details
     };
 
-    const projects = [
-        {
-            projectName: "Project Alpha",
-            projectDescription: "Developed a responsive e-commerce website.",
-            hiredBy: "John Doe",
-            status: "completed",
-            cost : '80'
-        },
-        {
-            projectName: "Project Beta",
-            projectDescription: "Created a real-time chat application.",
-            hiredBy: "Jane Smith",
-            status: "inProgress",
-            cost : '80'
-        },
-        {
-            projectName: "Project Gamma",
-            projectDescription: "Built an AI-driven recommendation system.",
-            hiredBy: "Alice Johnson",
-            status: "accepted",
-            cost : '80'
-        },
-        {
-            projectName: "Project Delta",
-            projectDescription: "Designed a new logo and branding materials.",
-            hiredBy: "Bob Brown",
-            status: "rejected",
-            cost : '80'
-        },
-    ];
 
 
     return (
@@ -379,12 +424,11 @@ const ProfilePage = () => {
                 <div className="border-t pt-4">
                     <h2 className="text-xl font-bold mb-2">Hiring History</h2>
                     <div className="p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {projects.map((project, index) => (
+                        {jobs.map((project, index) => (
                             <ProjectCard
                                 key={index}
                                 projectName={project.projectName}
                                 projectDescription={project.projectDescription}
-                                hiredBy={project.hiredBy}
                                 status={project.status}
                                 cost={project.cost}
                             />
