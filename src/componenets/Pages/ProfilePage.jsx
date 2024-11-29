@@ -231,7 +231,7 @@ const ProfilePage = () => {
                         />
                         <FontAwesomeIcon
                             icon={faEdit}
-                            className="absolute bottom-0 right-0 bg-white p-1 text-green-500 rounded-full cursor-pointer"
+                            className="absolute bottom-0 right-0 bg-white p-1 text-purple-500 rounded-full cursor-pointer"
                             onClick={() => document.getElementById("imageUpload").click()}
                         />
                         <input
@@ -294,7 +294,7 @@ const ProfilePage = () => {
                     </div>
                     <div className="ml-auto flex justify-center">
                         <button
-                            className="bg-green-500 text-white px-6 py-2 rounded-lg"
+                            className="bg-purple-500 text-white px-6 py-2 rounded-lg"
                             onClick={() => setShowEditDetailsDialog(true)} // Open the edit details dialog
                         >
                             Update Details
@@ -309,7 +309,7 @@ const ProfilePage = () => {
                         <p className="text-gray-700">{bio}</p>
                         <FontAwesomeIcon
                             icon={faEdit}
-                            className="absolute top-4 right-4 text-green-500 cursor-pointer"
+                            className="absolute top-4 right-4 text-purple-500 cursor-pointer"
                             onClick={() => setShowBioDialog(true)}
                         />
                     </div>
@@ -337,7 +337,7 @@ const ProfilePage = () => {
                         </div>
                         <FontAwesomeIcon
                             icon={faEdit}
-                            className="absolute top-4 right-4 text-green-500 cursor-pointer"
+                            className="absolute top-4 right-4 text-purple-500 cursor-pointer"
                             onClick={() => setShowSkillsDialog(true)}
                         />
                     </div>
@@ -380,7 +380,7 @@ const ProfilePage = () => {
                                     Cancel
                                 </button>
                                 <button
-                                    className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                                    className="bg-purple-500 text-white px-4 py-2 rounded-lg"
                                     onClick={() => setShowBioDialog(false)}
                                 >
                                     Save
@@ -403,7 +403,7 @@ const ProfilePage = () => {
                                 onChange={(e) => setNewSkill(e.target.value)}
                             />
                             <button
-                                className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
+                                className="bg-purple-500 text-white px-4 py-2 rounded-lg mb-4"
                                 onClick={handleAddSkill}
                             >
                                 <FontAwesomeIcon icon={faPlus} /> Add Skill
@@ -472,7 +472,7 @@ const ProfilePage = () => {
                                     Cancel
                                 </button>
                                 <button
-                                    className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                                    className="bg-purple-500 text-white px-4 py-2 rounded-lg"
                                     onClick={editDetails}
                                 >
                                     Update Details
