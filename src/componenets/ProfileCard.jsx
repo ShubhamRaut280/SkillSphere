@@ -62,7 +62,7 @@ const ProfileCard = ({ freelancer }) => {
   return (
     <div className="border cursor-pointer hover:bg-purple-50 rounded-[20px] px-7 py-8 shadow hover:shadow-lg transition">
       <img
-        src="https://placehold.co/100x100"
+        src={freelancer.img ? freelancer.img : "https://placehold.co/100x100"} // Default image if none is provided
         alt={freelancer.name}
         className="w-16 h-16 rounded-full mb-4 mx-auto"
       />
