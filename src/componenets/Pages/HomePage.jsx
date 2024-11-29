@@ -58,10 +58,10 @@ const HomePage = () => {
         const userSnap = await getDoc(recDocRef);
 
         if (userSnap.exists()) {
-            const data = userSnap.data();
-            setUserImg(data.img)
+          const data = userSnap.data();
+          setUserImg(data.img)
         }
-        
+
       }
     };
     fetchCurrentUser();
@@ -170,14 +170,17 @@ const HomePage = () => {
             />
           </div>
           <div className="flex-shrink-0">
-            <Link to="/profile">
-              <img
-                src={userImg}
-                alt="Current logged in user"
-                className="rounded-full w-10 h-10"
-              />
-            </Link>
+           
+              <Link to="/profile">
+                <img
+                  src={userImg}
+                  alt="Current logged-in user"
+                  className="rounded-full w-10 h-10"
+                />
+              </Link>
+        
           </div>
+
           <div className="ms-5">
             {localStorage.getItem("role") !== "user" && (
               <NotificationBtn toggleDrawer={toggleDrawer} />
