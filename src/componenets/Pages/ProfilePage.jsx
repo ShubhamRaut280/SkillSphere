@@ -10,6 +10,7 @@ import {
 
 import { auth, db } from '../../firebaseConfig';
 import { doc, getDoc, getFirestore, updateDoc } from 'firebase/firestore';
+import { useNavigate } from "react-router-dom";
 
 const renderStars = (rating) => {
     const fullStars = Math.floor(rating);  // Full stars for the integer part
@@ -53,6 +54,7 @@ const ProfilePage = () => {
     const [showEditDetailsDialog, setShowEditDetailsDialog] = useState(false); // Dialog state
     const [hourlyRate, setHourlyRate] = useState("");  // Add state for hourly rate
 
+    const navigate = useNavigate(); // Initialize the navigate function
 
 
     const [bio, setBio] = useState(
@@ -113,10 +115,10 @@ const ProfilePage = () => {
             const updatedSkills = [...skills, newSkill];
             setSkills(updatedSkills);
             setNewSkill(""); // Clear the new skill input
-    
+
             // Create a comma-separated string
             const tempskills = updatedSkills.join(',');
-    
+
             try {
                 const userDocRef = doc(db, "users", localStorage.getItem('userId'));
                 await updateDoc(userDocRef, { 'skills': tempskills });
@@ -126,15 +128,15 @@ const ProfilePage = () => {
             }
         }
     };
-    
+
     const handleDeleteSkill = async (index) => {
         // Create a new skills array after removing the skill at the specified index
         const updatedSkills = skills.filter((_, i) => i !== index);
         setSkills(updatedSkills); // Update the state with the new skills array
-    
+
         // Create a comma-separated string of the updated skills
         const tempskills = updatedSkills.join(',');
-    
+
         try {
             const userDocRef = doc(db, "users", localStorage.getItem('userId'));
             await updateDoc(userDocRef, { 'skills': tempskills });
@@ -143,9 +145,9 @@ const ProfilePage = () => {
             console.error("Error updating skills:", error);
         }
     };
-    
 
-    const handleImageChange =  (event) => {
+
+    const handleImageChange = (event) => {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
@@ -153,11 +155,11 @@ const ProfilePage = () => {
                 const base64String = reader.result.split(",")[1]; // Extracting only the Base64 data
                 setProfileImage(`data:image/jpeg;base64,${base64String}`);
                 console.log("Base64 String:", base64String); // Logging the Base64 string
-                try{
+                try {
                     const userDocRef = doc(db, "users", localStorage.getItem('userId'));
-        
-                    await updateDoc(userDocRef, { 'img' : `data:image/jpeg;base64,${base64String}` });
-            
+
+                    await updateDoc(userDocRef, { 'img': `data:image/jpeg;base64,${base64String}` });
+
                     console.log(`Image URL updated successfully.`);
                 } catch (error) {
                     console.error("Error updating image URL:", error);
@@ -165,8 +167,14 @@ const ProfilePage = () => {
             };
             reader.readAsDataURL(file);
 
-        
+
         }
+    };
+
+    
+
+    const handleBackClick = () => {
+        navigate("/home"); // Navigate to the homepage
     };
 
     const handleBioUpdate = async (e) => {
@@ -176,23 +184,24 @@ const ProfilePage = () => {
             const userDocRef = doc(db, "users", localStorage.getItem('userId'));
             await updateDoc(userDocRef, { 'bio': bio });
             console.log("Bio updated successfully.");
-            } catch (error) {
-                console.error("Error updating bio:", error);
-                }    }
+        } catch (error) {
+            console.error("Error updating bio:", error);
+        }
+    }
 
     const editDetails = async () => {
         // You can perform validation or send updated details to the server here.
         console.log("Updated details:", { name, phone, location, hourlyRate });
-        try{
+        try {
             const userDocRef = doc(db, "users", localStorage.getItem('userId'));
 
-            await updateDoc(userDocRef, { 
-                'name' : name,
-                'phoneNumber' : phone,
-                'address' : location,
-                'hourlyRate' : hourlyRate
-             });
-    
+            await updateDoc(userDocRef, {
+                'name': name,
+                'phoneNumber': phone,
+                'address': location,
+                'hourlyRate': hourlyRate
+            });
+
             console.log(`Details updated successfully.`);
         } catch (error) {
             console.error("Error updating details", error);
@@ -200,241 +209,250 @@ const ProfilePage = () => {
         setShowEditDetailsDialog(false); // Close the dialog after updating details
     };
 
+
     return (
-        <div className="bg-white min-h-screen mt-5 flex flex-col p-6 md:max-w-6xl mx-auto border rounded-lg">
-            {/* Header Section */}
-            <div className="flex items-center mb-4">
-                <div className="relative">
-                    <img
-                        src={profileImage}
-                        alt="Profile picture"
-                        className="rounded-full w-20 h-20"
-                        onError={(e) => (e.target.src = "https://placehold.co/100x100")}
-                    />
-                    <FontAwesomeIcon
-                        icon={faEdit}
-                        className="absolute bottom-0 right-0 bg-white p-1 text-green-500 rounded-full cursor-pointer"
-                        onClick={() => document.getElementById("imageUpload").click()}
-                    />
-                    <input
-                        id="imageUpload"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleImageChange}
-                    />
-                </div>
-                <div className="flex ms-10 justify-between items-center">
-                    <div>
-                    <div className="flex items-center gap-2">
-                            <div className="flex items-center text-2xl font-bold gap-1">
-                                {name}
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <span className="text-gray-600 font-medium text-lg">Address:</span>
-                            <div className="flex items-center gap-1">
-                                {location}
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <span className="text-gray-600 font-medium text-lg">Phone:</span>
-                            <div className="flex items-center gap-1">
-                                {phone}
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <span className="text-gray-600 font-medium text-lg">Email:</span>
-                            <div className="flex items-center gap-1">
-                                {email}
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div className="ms-10">
-                        {/* Hourly Rate Section */}
-                        <div className="flex items-center gap-2 mb-4">
-                            <span className="bg-purple-100 text-purple-700 font-semibold py-1 px-3 rounded-lg text-lg shadow-sm">
-                                ${hourlyRate}/hr
-                            </span>
-                            <span className="text-gray-600 font-medium">Hourly Rate</span>
-                        </div>
-
-                        {/* Ratings Section */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-gray-600 font-medium text-lg">Rating:</span>
-                            <div className="flex items-center gap-1">
-                                {renderStars(rating)}
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-                <div className="ml-auto flex justify-center">
-                    <button
-                        className="bg-green-500 text-white px-6 py-2 rounded-lg"
-                        onClick={() => setShowEditDetailsDialog(true)} // Open the edit details dialog
-                    >
-                        Update Details
-                    </button>
-                </div>
-            </div>
-
-            {/* Bio and Skills Section */}
-            <div className="flex flex-col md:flex-row mb-4 gap-4">
-                <div className="flex-1 p-4 border rounded-lg relative">
-                    <h2 className="text-xl font-bold mb-2">Bio</h2>
-                    <p className="text-gray-700">{bio}</p>
-                    <FontAwesomeIcon
-                        icon={faEdit}
-                        className="absolute top-4 right-4 text-green-500 cursor-pointer"
-                        onClick={() => setShowBioDialog(true)}
-                    />
-                </div>
-                <div className="flex-1 p-4 border rounded-lg relative">
-                    <h2 className="text-xl font-bold mb-2">Skills</h2>
-                    <div className="flex flex-wrap gap-2 mt-4">
-                        {skills.length > 0 ? (
-                            skills.map((skill, index) => (
-                                <span
-                                    key={index}
-                                    className="bg-gray-200 text-gray-800 text-sm px-3 py-1 rounded flex items-center"
-                                >
-                                    {skill}
-                                    <button
-                                        className="ml-2 text-red-500 hover:text-red-700"
-                                        onClick={() => handleDeleteSkill(index)}
-                                    >
-                                        ×
-                                    </button>
-                                </span>
-                            ))
-                        ) : (
-                            <span className="text-gray-500 text-sm">No skills listed</span>
-                        )}
-                    </div>
-                    <FontAwesomeIcon
-                        icon={faEdit}
-                        className="absolute top-4 right-4 text-green-500 cursor-pointer"
-                        onClick={() => setShowSkillsDialog(true)}
-                    />
-                </div>
-            </div>
-
-            {/* Hiring History Section */}
-            <div className="border-t pt-4">
-                <h2 className="text-xl font-bold mb-2">Hiring History</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {[...Array(6)].map((_, i) => (
-                        <div key={i} className="p-4 border rounded-lg">
-                            <h3 className="text-lg font-bold mb-2">Project {i + 1}</h3>
-                            <p className="text-gray-700">Description of project {i + 1}.</p>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Dialog for Bio */}
-            {showBioDialog && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-                        <h2 className="text-xl font-bold mb-4">Edit Bio</h2>
-                        <textarea
-                            className="w-full p-2 border rounded-lg mb-4"
-                            value={bio}
-                            onChange={handleBioUpdate}
-                            onInput={(e) => {
-                                e.target.style.height = "auto";
-                                e.target.style.height = `${e.target.scrollHeight}px`;
-                            }}
-                            style={{ overflow: "hidden" }}
-                        ></textarea>
-
-                        <div className="flex justify-end gap-2">
-                            <button
-                                className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-                                onClick={() => setShowBioDialog(false)}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className="bg-green-500 text-white px-4 py-2 rounded-lg"
-                                onClick={() => setShowBioDialog(false)}
-                            >
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Dialog for Skills */}
-            {showSkillsDialog && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-                        <h2 className="text-xl font-bold mb-4">Edit Skills</h2>
-                        <input
-                            type="text"
-                            className="w-full p-2 border rounded-lg mb-4"
-                            value={newSkill}
-                            placeholder="Add new skill"
-                            onChange={(e) => setNewSkill(e.target.value)}
+        <div>
+            <button
+                className="flex items-center gap-2 text-white bg-purple-500 m-5 px-5 py-3 rounded-full shadow hover:bg-purple-800 transition"
+                onClick={handleBackClick} // Replace with your back navigation logic
+            >
+                <FontAwesomeIcon icon={faArrowLeft} />
+                
+            </button>            
+            <div className="bg-white min-h-screen mt-5 flex flex-col p-6 md:max-w-6xl mx-auto border rounded-lg">
+                {/* Header Section */}
+                <div className="flex items-center mb-4">
+                    <div className="relative">
+                        <img
+                            src={profileImage}
+                            alt="Profile picture"
+                            className="rounded-full w-20 h-20"
+                            onError={(e) => (e.target.src = "https://placehold.co/100x100")}
                         />
-                        <button
-                            className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
-                            onClick={handleAddSkill}
-                        >
-                            <FontAwesomeIcon icon={faPlus} /> Add Skill
-                        </button>
-                        <div className="flex justify-end gap-2">
-                            <button
-                                className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-                                onClick={() => setShowSkillsDialog(false)}
-                            >
-                                Close
-                            </button>
+                        <FontAwesomeIcon
+                            icon={faEdit}
+                            className="absolute bottom-0 right-0 bg-white p-1 text-green-500 rounded-full cursor-pointer"
+                            onClick={() => document.getElementById("imageUpload").click()}
+                        />
+                        <input
+                            id="imageUpload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleImageChange}
+                        />
+                    </div>
+                    <div className="flex ms-10 justify-between items-center">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center text-2xl font-bold gap-1">
+                                    {name}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <span className="text-gray-600 font-medium text-lg">Address:</span>
+                                <div className="flex items-center gap-1">
+                                    {location}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <span className="text-gray-600 font-medium text-lg">Phone:</span>
+                                <div className="flex items-center gap-1">
+                                    {phone}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <span className="text-gray-600 font-medium text-lg">Email:</span>
+                                <div className="flex items-center gap-1">
+                                    {email}
+                                </div>
+                            </div>
+
                         </div>
+
+                        <div className="ms-10">
+                            {/* Hourly Rate Section */}
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className="bg-purple-100 text-purple-700 font-semibold py-1 px-3 rounded-lg text-lg shadow-sm">
+                                    ${hourlyRate}/hr
+                                </span>
+                                <span className="text-gray-600 font-medium">Hourly Rate</span>
+                            </div>
+
+                            {/* Ratings Section */}
+                            <div className="flex items-center gap-2">
+                                <span className="text-gray-600 font-medium text-lg">Rating:</span>
+                                <div className="flex items-center gap-1">
+                                    {renderStars(rating)}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div className="ml-auto flex justify-center">
+                        <button
+                            className="bg-green-500 text-white px-6 py-2 rounded-lg"
+                            onClick={() => setShowEditDetailsDialog(true)} // Open the edit details dialog
+                        >
+                            Update Details
+                        </button>
                     </div>
                 </div>
-            )}
 
-            {/* Dialog for Editing Details */}
-            {showEditDetailsDialog && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-                        <h2 className="text-xl font-bold mb-4">Edit Details</h2>
-                        <div className="mb-4">
-                            <label className="block mb-2">Name</label>
+                {/* Bio and Skills Section */}
+                <div className="flex flex-col md:flex-row mb-4 gap-4">
+                    <div className="flex-1 p-4 border rounded-lg relative">
+                        <h2 className="text-xl font-bold mb-2">Bio</h2>
+                        <p className="text-gray-700">{bio}</p>
+                        <FontAwesomeIcon
+                            icon={faEdit}
+                            className="absolute top-4 right-4 text-green-500 cursor-pointer"
+                            onClick={() => setShowBioDialog(true)}
+                        />
+                    </div>
+                    <div className="flex-1 p-4 border rounded-lg relative">
+                        <h2 className="text-xl font-bold mb-2">Skills</h2>
+                        <div className="flex flex-wrap gap-2 mt-4">
+                            {skills.length > 0 ? (
+                                skills.map((skill, index) => (
+                                    <span
+                                        key={index}
+                                        className="bg-gray-200 text-gray-800 text-sm px-3 py-1 rounded flex items-center"
+                                    >
+                                        {skill}
+                                        <button
+                                            className="ml-2 text-red-500 hover:text-red-700"
+                                            onClick={() => handleDeleteSkill(index)}
+                                        >
+                                            ×
+                                        </button>
+                                    </span>
+                                ))
+                            ) : (
+                                <span className="text-gray-500 text-sm">No skills listed</span>
+                            )}
+                        </div>
+                        <FontAwesomeIcon
+                            icon={faEdit}
+                            className="absolute top-4 right-4 text-green-500 cursor-pointer"
+                            onClick={() => setShowSkillsDialog(true)}
+                        />
+                    </div>
+                </div>
+
+                {/* Hiring History Section */}
+                <div className="border-t pt-4">
+                    <h2 className="text-xl font-bold mb-2">Hiring History</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {[...Array(6)].map((_, i) => (
+                            <div key={i} className="p-4 border rounded-lg">
+                                <h3 className="text-lg font-bold mb-2">Project {i + 1}</h3>
+                                <p className="text-gray-700">Description of project {i + 1}.</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Dialog for Bio */}
+                {showBioDialog && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+                            <h2 className="text-xl font-bold mb-4">Edit Bio</h2>
+                            <textarea
+                                className="w-full p-2 border rounded-lg mb-4"
+                                value={bio}
+                                onChange={handleBioUpdate}
+                                onInput={(e) => {
+                                    e.target.style.height = "auto";
+                                    e.target.style.height = `${e.target.scrollHeight}px`;
+                                }}
+                                style={{ overflow: "hidden" }}
+                            ></textarea>
+
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                                    onClick={() => setShowBioDialog(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                                    onClick={() => setShowBioDialog(false)}
+                                >
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Dialog for Skills */}
+                {showSkillsDialog && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+                            <h2 className="text-xl font-bold mb-4">Edit Skills</h2>
                             <input
                                 type="text"
-                                className="w-full p-2 border rounded-lg"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                className="w-full p-2 border rounded-lg mb-4"
+                                value={newSkill}
+                                placeholder="Add new skill"
+                                onChange={(e) => setNewSkill(e.target.value)}
                             />
+                            <button
+                                className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
+                                onClick={handleAddSkill}
+                            >
+                                <FontAwesomeIcon icon={faPlus} /> Add Skill
+                            </button>
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                                    onClick={() => setShowSkillsDialog(false)}
+                                >
+                                    Close
+                                </button>
+                            </div>
                         </div>
-                        <div className="mb-4">
-                            <label className="block mb-2">Phone</label>
-                            <input
-                                type="text"
-                                className="w-full p-2 border rounded-lg"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block mb-2">Location</label>
-                            <input
-                                type="text"
-                                className="w-full p-2 border rounded-lg"
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                            />
-                        </div>
-                        <div className="mb-4">
+                    </div>
+                )}
+
+                {/* Dialog for Editing Details */}
+                {showEditDetailsDialog && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+                            <h2 className="text-xl font-bold mb-4">Edit Details</h2>
+                            <div className="mb-4">
+                                <label className="block mb-2">Name</label>
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded-lg"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block mb-2">Phone</label>
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded-lg"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block mb-2">Location</label>
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded-lg"
+                                    value={location}
+                                    onChange={(e) => setLocation(e.target.value)}
+                                />
+                            </div>
+                            <div className="mb-4">
                                 <label htmlFor="hourlyRate" className="block text-sm font-medium">Hourly Rate</label>
                                 <input
                                     type="number"
@@ -446,23 +464,24 @@ const ProfilePage = () => {
                                     step="0.01"
                                 />
                             </div>
-                        <div className="flex justify-end gap-2">
-                            <button
-                                className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-                                onClick={() => setShowEditDetailsDialog(false)}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className="bg-green-500 text-white px-4 py-2 rounded-lg"
-                                onClick={editDetails}
-                            >
-                                Update Details
-                            </button>
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                                    onClick={() => setShowEditDetailsDialog(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                                    onClick={editDetails}
+                                >
+                                    Update Details
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 };
