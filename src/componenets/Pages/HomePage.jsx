@@ -7,7 +7,7 @@ import Loader from "../Loader";
 import NotificationBtn from "../Buttons/NotificationBtn";
 import NotificationDrawer from "../Modals/NotificationDrawer";
 import { Link, useNavigate } from "react-router-dom";
-
+import CircularProgress from '@mui/material/CircularProgress'; // If using Material-UI
 // Helper functions to extract unique skills, locations, and ratings
 const getUniqueSkills = (freelancers) => {
   const allSkills = freelancers
@@ -39,7 +39,6 @@ const HomePage = () => {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [userImg, setUserImg] = useState("https://placehold.co/40x40")
-
   const navigate = useNavigate(); // Hook for programmatic navigation
 
   // Handle profile image click to navigate to profile page
@@ -158,69 +157,74 @@ const HomePage = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-white flex flex-col">
-      <header className="bg-white shadow top-0 left-0 w-full z-10">
-        <div className="container mx-auto py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold">Local Search</div>
-          <div className="flex-grow mx-4">
-            <input
-              type="text"
-              placeholder="Search"
-              className="w-full px-4 py-2 border rounded-full"
-            />
-          </div>
-          <div className="flex-shrink-0">
-           
-              <Link to="/profile">
-                <img
-                  src={userImg}
-                  alt="Current logged-in user"
-                  className="rounded-full w-10 h-10"
-                />
-              </Link>
-        
-          </div>
+    <div>
 
-          <div className="ms-5">
-            {localStorage.getItem("role") !== "user" && (
-              <NotificationBtn toggleDrawer={toggleDrawer} />
-            )}
-          </div>
+      {loading ? (
+        <div className="flex justify-center items-center min-h-screen">
+          <CircularProgress />
         </div>
-      </header>
-      <div className="flex flex-grow">
-        <LeftSidebar
-          skillsList={skillsList}
-          locationList={locationList}
-          ratingList={ratingList}
-          selectedSkills={selectedSkills}
-          selectedLocation={selectedLocation}
-          selectedRating={selectedRating}
-          handleSkillFilter={handleSkillFilter}
-          handleLocationFilter={handleLocationFilter}
-          handleRatingFilter={handleRatingFilter}
-          clearFilter={clearFilter}
-        />
-        <main className="flex-grow ml-10 overflow-y-auto">
-          <div className="container mx-auto px-8 py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 justify-start">
-            {loading ? (
-              <div className="grid place-items-center">
-                <Loader />
-              </div>
-            ) : (
-              filteredFreelancers.map((freelancer) => (
-                <ProfileCard
-                  key={freelancer.id}
-                  freelancer={freelancer}
-                  onProfileClick={handleProfileClick}
-                />
-              ))
-            )}
-          </div>
-        </main>
-      </div>
+      ) : (
 
-      <NotificationDrawer isOpen={isDrawerOpen} toggleDrawer={toggleDrawer} />
+        <div className="h-screen w-screen bg-white flex flex-col">
+          <header className="bg-white shadow top-0 left-0 w-full z-10">
+            <div className="container mx-auto py-4 flex justify-between items-center">
+              <div className="text-2xl font-bold">Local Search</div>
+              <div className="flex-grow mx-4">
+                <input
+                  type="text"
+                  placeholder="Search"
+                  className="w-full px-4 py-2 border rounded-full"
+                />
+              </div>
+              <div className="flex-shrink-0">
+
+                <Link to="/profile">
+                  <img
+                    src={userImg}
+                    alt="Current logged-in user"
+                    className="rounded-full w-10 h-10"
+                  />
+                </Link>
+
+              </div>
+
+              <div className="ms-5">
+                {localStorage.getItem("role") !== "user" && (
+                  <NotificationBtn toggleDrawer={toggleDrawer} />
+                )}
+              </div>
+            </div>
+          </header>
+          <div className="flex flex-grow">
+            <LeftSidebar
+              skillsList={skillsList}
+              locationList={locationList}
+              ratingList={ratingList}
+              selectedSkills={selectedSkills}
+              selectedLocation={selectedLocation}
+              selectedRating={selectedRating}
+              handleSkillFilter={handleSkillFilter}
+              handleLocationFilter={handleLocationFilter}
+              handleRatingFilter={handleRatingFilter}
+              clearFilter={clearFilter}
+            />
+            <main className="flex-grow ml-10 overflow-y-auto">
+              <div className="container mx-auto px-8 py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 justify-start">
+
+                {filteredFreelancers.map((freelancer) => (
+                  <ProfileCard
+                    key={freelancer.id}
+                    freelancer={freelancer}
+                    onProfileClick={handleProfileClick}
+                  />
+                ))
+                }
+              </div>
+            </main>
+          </div>
+
+          <NotificationDrawer isOpen={isDrawerOpen} toggleDrawer={toggleDrawer} />
+        </div>)}
     </div>
   );
 };
