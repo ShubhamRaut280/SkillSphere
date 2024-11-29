@@ -15,32 +15,21 @@ import ProjectCard from "../Cards/ProjectCard";
 
 const UserProfilePage = () => {
     const [showBioDialog, setShowBioDialog] = useState(false);
-    const [showSkillsDialog, setShowSkillsDialog] = useState(false);
     const [showEditDetailsDialog, setShowEditDetailsDialog] = useState(false); // Dialog state
-    const [hourlyRate, setHourlyRate] = useState("");  // Add state for hourly rate
     const [jobs, setJobs] = useState([])
 
     const navigate = useNavigate(); // Initialize the navigate function
 
 
     const [bio, setBio] = useState(
-        "I’m a developer experienced in building websites for small and medium-sized businesses."
+        ''
     );
-    const [skills, setSkills] = useState([
-        "HTML and CSS3",
-        "PHP",
-        "jQuery",
-        "WordPress",
-        "SEO",
-    ]);
-    const [newSkill, setNewSkill] = useState("");
     const [profileImage, setProfileImage] = useState("https://placehold.co/100x100");
     const [name, setName] = useState("Shubham K.");
     const [phone, setPhone] = useState("+91 1234567890");
     const [location, setLocation] = useState("Pune, India");
     const [email, setEmail] = useState("");
     const [user, setUser] = useState({}); // User object
-    const [rating, setRating] = useState(0.0);
 
 
     useEffect(() => {
@@ -57,17 +46,9 @@ const UserProfilePage = () => {
                     setBio(userdata.bio || '');
                     setEmail(userdata.email || '');
     
-                    const rating = parseFloat(userdata.rating) || 0;
-                    setRating(rating);
-    
-                    const skillsArray = userdata.skills
-                        ? userdata.skills.split(',').map((skill) => skill.trim())
-                        : [];
-                    setSkills(skillsArray);
     
                     setPhone(userdata.phoneNumber || '');
                     setLocation(userdata.address || '');
-                    setHourlyRate(userdata.hourlyRate || 0);
                     setProfileImage(userdata.img || '');
                     console.log(userdata);
                 } else {
@@ -154,43 +135,6 @@ const UserProfilePage = () => {
     }, []); // Dependency array intentionally left empty to run once
     
 
-    const handleAddSkill = async () => {
-        if (newSkill.trim() !== "") {
-            // Add the new skill to the state and update it immediately
-            const updatedSkills = [...skills, newSkill];
-            setSkills(updatedSkills);
-            setNewSkill(""); // Clear the new skill input
-
-            // Create a comma-separated string
-            const tempskills = updatedSkills.join(',');
-
-            try {
-                const userDocRef = doc(db, "users", localStorage.getItem('userId'));
-                await updateDoc(userDocRef, { 'skills': tempskills });
-                console.log("Skills updated successfully.");
-            } catch (error) {
-                console.error("Error updating skills:", error);
-            }
-        }
-    };
-
-    const handleDeleteSkill = async (index) => {
-        // Create a new skills array after removing the skill at the specified index
-        const updatedSkills = skills.filter((_, i) => i !== index);
-        setSkills(updatedSkills); // Update the state with the new skills array
-
-        // Create a comma-separated string of the updated skills
-        const tempskills = updatedSkills.join(',');
-
-        try {
-            const userDocRef = doc(db, "users", localStorage.getItem('userId'));
-            await updateDoc(userDocRef, { 'skills': tempskills });
-            console.log("Skills updated successfully.");
-        } catch (error) {
-            console.error("Error updating skills:", error);
-        }
-    };
-
 
     const handleImageChange = (event) => {
         const file = event.target.files[0];
@@ -236,7 +180,7 @@ const UserProfilePage = () => {
 
     const editDetails = async () => {
         // You can perform validation or send updated details to the server here.
-        console.log("Updated details:", { name, phone, location, hourlyRate });
+        console.log("Updated details:", { name, phone, location });
         try {
             const userDocRef = doc(db, "users", localStorage.getItem('userId'));
 
@@ -244,7 +188,6 @@ const UserProfilePage = () => {
                 'name': name,
                 'phoneNumber': phone,
                 'address': location,
-                'hourlyRate': hourlyRate
             });
 
             console.log(`Details updated successfully.`);
@@ -393,35 +336,6 @@ const UserProfilePage = () => {
                     </div>
                 )}
 
-                {/* Dialog for Skills */}
-                {showSkillsDialog && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-                            <h2 className="text-xl font-bold mb-4">Edit Skills</h2>
-                            <input
-                                type="text"
-                                className="w-full p-2 border rounded-lg mb-4"
-                                value={newSkill}
-                                placeholder="Add new skill"
-                                onChange={(e) => setNewSkill(e.target.value)}
-                            />
-                            <button
-                                className="bg-purple-500 text-white px-4 py-2 rounded-lg mb-4"
-                                onClick={handleAddSkill}
-                            >
-                                <FontAwesomeIcon icon={faPlus} /> Add Skill
-                            </button>
-                            <div className="flex justify-end gap-2">
-                                <button
-                                    className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-                                    onClick={() => setShowSkillsDialog(false)}
-                                >
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* Dialog for Editing Details */}
                 {showEditDetailsDialog && (
@@ -455,18 +369,7 @@ const UserProfilePage = () => {
                                     onChange={(e) => setLocation(e.target.value)}
                                 />
                             </div>
-                            <div className="mb-4">
-                                <label htmlFor="hourlyRate" className="block text-sm font-medium">Hourly Rate</label>
-                                <input
-                                    type="number"
-                                    id="hourlyRate"
-                                    className="w-full p-2 border rounded"
-                                    value={hourlyRate}
-                                    onChange={(e) => setHourlyRate(e.target.value)}
-                                    min="0"
-                                    step="0.01"
-                                />
-                            </div>
+                          
                             <div className="flex justify-end gap-2">
                                 <button
                                     className="bg-gray-500 text-white px-4 py-2 rounded-lg"
