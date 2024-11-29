@@ -74,50 +74,68 @@ const HireModal = ({ freelancer, onClose }) => {
     e.preventDefault();
   
     if (!userId) {
-      toast.error("User ID not found. Please log in again.");
-      return;
+        toast.error("User ID not found. Please log in again.");
+        return;
     }
   
     setIsSubmitting(true);
   
     try {
-      const jobRequest = {
-        userId,
-        freelancerId: freelancer.id,
-        jobDescription,
-        jobStartTime,
-        jobEndTime,
-        address,
-        status,
-        createdAt: new Date(),
-      };
+        // Parse job start and end times
+        const startTime = new Date(jobStartTime);
+        const endTime = new Date(jobEndTime);
   
-      // Create a new document with a random ID
-      const jobRequestRef = doc(collection(db, "jobrequest"));
-      await setDoc(jobRequestRef, jobRequest);
+        // Calculate the total job duration in hours
+        const durationInHours = (endTime - startTime) / (1000 * 60 * 60); // Difference in milliseconds converted to hours
   
-      // Fetch freelancer email
-      const freelancerDoc = await getDoc(doc(db, "users", freelancer.id));
-      if (freelancerDoc.exists()) {
-        const freelancerEmail = freelancerDoc.data().email;
-        const freelancerName = freelancer.name || "Freelancer";
+        if (durationInHours <= 0) {
+            toast.error("Job end time must be after the start time.");
+            setIsSubmitting(false);
+            return;
+        }
   
-        // Send email directly with dynamic content
-        await sendEmail(freelancerEmail, freelancerName);
+        // Calculate revenue
+        const hourlyRate = freelancer.hourlyRate || 0; // Default to 0 if hourly rate is not set
+        const totalRevenue = durationInHours * hourlyRate;
   
-        toast.success("Job request submitted successfully.");
-        onClose(); // Close the modal
-      } else {
-        toast.error("Freelancer email not found.");
-      }
+        const jobRequest = {
+            userId,
+            freelancerId: freelancer.id,
+            jobDescription,
+            jobStartTime,
+            jobEndTime,
+            address,
+            status,
+            createdAt: new Date(),
+            totalRevenue, // Include calculated revenue in the job request
+        };
+  
+        // Create a new document with a random ID
+        const jobRequestRef = doc(collection(db, "jobrequest"));
+        await setDoc(jobRequestRef, jobRequest);
+  
+        // Fetch freelancer email
+        const freelancerDoc = await getDoc(doc(db, "users", freelancer.id));
+        if (freelancerDoc.exists()) {
+            const freelancerEmail = freelancerDoc.data().email;
+            const freelancerName = freelancer.name || "Freelancer";
+  
+            // Send email with job details
+            await sendEmail(freelancerEmail, freelancerName);
+  
+            toast.success("Job request submitted successfully.");
+            onClose(); // Close the modal
+        } else {
+            toast.error("Freelancer email not found.");
+        }
     } catch (error) {
-      console.error("Error submitting job request: ", error);
-      toast.error("Error submitting job request.");
+        console.error("Error submitting job request: ", error);
+        toast.error("Error submitting job request.");
     } finally {
-      setIsSubmitting(false);
+        setIsSubmitting(false);
     }
-  };
-  
+};
+
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
