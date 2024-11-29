@@ -290,7 +290,7 @@ const ProfilePage = () => {
     return (
         <div>
             <button
-                className="flex items-center gap-2 text-white bg-purple-500 m-5 px-5 py-3 rounded-full shadow hover:bg-purple-800 transition"
+                className="flex items-center gap-2 text-white bg-purple-500 m-5 px-5 py-3 rounded-lg shadow hover:bg-purple-800 transition"
                 onClick={handleBackClick} // Replace with your back navigation logic
             >
                 <FontAwesomeIcon icon={faArrowLeft} />
@@ -422,8 +422,8 @@ const ProfilePage = () => {
 
                 {/* Hiring History Section */}
                 <div className="border-t pt-4">
-                    <h2 className="text-xl font-bold mb-2">Hiring History</h2>
-                    <div className="p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <h2 className="text-xl font-bold mb-2">Work History</h2>
+                    <div className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {jobs.map((project, index) => (
                             <ProjectCard
                                 key={index}
