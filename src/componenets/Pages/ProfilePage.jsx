@@ -140,19 +140,24 @@ const ProfilePage = () => {
         
                                 let jobStatus = reqdata.status || "Unknown";
         
-                                if (
-                                    currentTime >= jobStartTime &&
-                                    currentTime <= jobEndTime
-                                ) {
-                                    jobStatus = "inProgress";
-        
-                                    // Update the status in Firestore
-                                    const jobRef = doc(db, "jobrequest", document.id);
-                                    await updateDoc(
-                                        jobRef,
-                                        { status: "inProgress" },
-                                        { merge: true }
-                                    );
+                                
+                                if(jobStatus === 'accepted'){
+                                    if (
+                                        currentTime >= jobStartTime &&
+                                        currentTime <= jobEndTime 
+                                    ) {
+                                        jobStatus = "inProgress";
+                                    }
+
+                                    if (
+                                        currentTime > jobEndTime 
+                                    ) {
+                                        jobStatus = "completed";
+                                    }
+                                }
+
+                                if(jobStatus === 'pending'){
+                                    return null;
                                 }
         
                                 return {

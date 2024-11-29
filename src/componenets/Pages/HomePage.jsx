@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { db, auth } from "../../firebaseConfig";
 import ProfileCard from "../ProfileCard";
 import LeftSidebar from "../LeftSidebar";
@@ -38,6 +38,7 @@ const HomePage = () => {
   const [ratingList, setRatingList] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [userImg, setUserImg] = useState("https://placehold.co/40x40")
 
   const navigate = useNavigate(); // Hook for programmatic navigation
 
@@ -49,10 +50,18 @@ const HomePage = () => {
 
   // Fetch the current logged-in user's ID
   useEffect(() => {
-    const fetchCurrentUser = () => {
+    const fetchCurrentUser = async () => {
       const user = auth.currentUser;
       if (user) {
         setCurrentUserId(user.uid);
+        const recDocRef = doc(db, "users", localStorage.getItem('userId'));
+        const userSnap = await getDoc(recDocRef);
+
+        if (userSnap.exists()) {
+            const data = userSnap.data();
+            setUserImg(data.img)
+        }
+        
       }
     };
     fetchCurrentUser();
@@ -163,7 +172,7 @@ const HomePage = () => {
           <div className="flex-shrink-0">
             <Link to="/profile">
               <img
-                src="https://placehold.co/40x40"
+                src={userImg}
                 alt="Current logged in user"
                 className="rounded-full w-10 h-10"
               />
