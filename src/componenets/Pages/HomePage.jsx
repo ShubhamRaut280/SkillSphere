@@ -3,11 +3,11 @@ import { collection, getDocs, query, where, doc, getDoc } from "firebase/firesto
 import { db, auth } from "../../firebaseConfig";
 import ProfileCard from "../ProfileCard";
 import LeftSidebar from "../LeftSidebar";
-import Loader from "../Loader";
+import CircularProgress from '@mui/material/CircularProgress';
 import NotificationBtn from "../Buttons/NotificationBtn";
 import NotificationDrawer from "../Modals/NotificationDrawer";
 import { Link, useNavigate } from "react-router-dom";
-import CircularProgress from '@mui/material/CircularProgress'; // If using Material-UI
+
 // Helper functions to extract unique skills, locations, and ratings
 const getUniqueSkills = (freelancers) => {
   const allSkills = freelancers
@@ -28,65 +28,55 @@ const getUniqueRatings = (freelancers) => {
 
 const HomePage = () => {
   const [freelancers, setFreelancers] = useState([]);
+  const [filteredFreelancers, setFilteredFreelancers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedRating, setSelectedRating] = useState("");
-  const [filteredFreelancers, setFilteredFreelancers] = useState([]);
   const [skillsList, setSkillsList] = useState([]);
   const [locationList, setLocationList] = useState([]);
   const [ratingList, setRatingList] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [userImg, setUserImg] = useState("https://placehold.co/40x40")
-  const navigate = useNavigate(); // Hook for programmatic navigation
+  const [userImg, setUserImg] = useState("https://placehold.co/40x40");
+  const navigate = useNavigate();
 
-  // Handle profile image click to navigate to profile page
-  const handleProfileClick = () => {
-    localStorage.getItem('role') === 'user' ? navigate('/userprofile') : navigate('/profile');
-
-  };
-
-  // Fetch the current logged-in user's ID
+  // Fetch current user
   useEffect(() => {
     const fetchCurrentUser = async () => {
       const user = auth.currentUser;
       if (user) {
         setCurrentUserId(user.uid);
-        const recDocRef = doc(db, "users", localStorage.getItem('userId'));
-        const userSnap = await getDoc(recDocRef);
-
+        const userDocRef = doc(db, "users", localStorage.getItem("userId"));
+        const userSnap = await getDoc(userDocRef);
         if (userSnap.exists()) {
-          const data = userSnap.data();
-          setUserImg(data.img)
+          const userData = userSnap.data();
+          setUserImg(userData.img);
         }
-
       }
     };
     fetchCurrentUser();
   }, []);
 
-  // Fetch freelancers and filter them based on the current user ID
+  // Fetch freelancers
   useEffect(() => {
     const fetchFreelancers = async () => {
       try {
-        const q = query(
+        const freelancersQuery = query(
           collection(db, "users"),
           where("role", "==", "freelance")
         );
-        const querySnapshot = await getDocs(q);
-        const fetchedFreelancers = querySnapshot.docs
-          .map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
+        const querySnapshot = await getDocs(freelancersQuery);
+        const freelancersData = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
           .filter((freelancer) => freelancer.id !== currentUserId);
 
-        setFreelancers(fetchedFreelancers);
-        setSkillsList(getUniqueSkills(fetchedFreelancers));
-        setLocationList(getUniqueLocations(fetchedFreelancers));
-        setRatingList(getUniqueRatings(fetchedFreelancers));
-        setFilteredFreelancers(fetchedFreelancers);
+        setFreelancers(freelancersData);
+        setSkillsList(getUniqueSkills(freelancersData));
+        setLocationList(getUniqueLocations(freelancersData));
+        setRatingList(getUniqueRatings(freelancersData));
+        setFilteredFreelancers(freelancersData);
       } catch (error) {
         console.error("Error fetching freelancers:", error);
       } finally {
@@ -94,12 +84,10 @@ const HomePage = () => {
       }
     };
 
-    if (currentUserId !== null) {
-      fetchFreelancers();
-    }
+    if (currentUserId) fetchFreelancers();
   }, [currentUserId]);
 
-  // Filter freelancers based on selected criteria (skills, location, rating)
+  // Filter freelancers
   useEffect(() => {
     let filtered = freelancers;
 
@@ -120,51 +108,53 @@ const HomePage = () => {
       filtered = filtered.filter((freelancer) => freelancer.rating >= ratingThreshold);
     }
 
+    if (searchQuery.trim()) {
+      const lowerCaseQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter((freelancer) =>
+        freelancer.name?.toLowerCase().includes(lowerCaseQuery) ||
+        freelancer.bio?.toLowerCase().includes(lowerCaseQuery) ||
+        freelancer.skills?.toLowerCase().includes(lowerCaseQuery)
+      );
+    }
     setFilteredFreelancers(filtered);
-  }, [selectedSkills, selectedLocation, selectedRating, freelancers]);
+  }, [selectedSkills, selectedLocation, selectedRating, searchQuery, freelancers]);
 
-  // Handle selection of skills in the filter
+  // Filter handlers
   const handleSkillFilter = (skill) => {
-    setSelectedSkills((prevSelectedSkills) => {
-      const updatedSkills = prevSelectedSkills.includes(skill)
-        ? prevSelectedSkills.filter((selected) => selected !== skill)
-        : [...prevSelectedSkills, skill];
-      return updatedSkills;
-    });
+    setSelectedSkills((prev) =>
+      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
+    );
   };
 
-  // Handle location selection in the filter
-  const handleLocationFilter = (location) => {
-    setSelectedLocation(location);
-  };
+  const handleLocationFilter = (location) => setSelectedLocation(location);
+  const handleRatingFilter = (rating) => setSelectedRating(rating);
 
-  // Handle rating selection in the filter
-  const handleRatingFilter = (rating) => {
-    setSelectedRating(rating);
-  };
+  // Search handler
+  const handleSearchChange = (event) => setSearchQuery(event.target.value);
 
-  // Clear all filters
+  // Clear filters
   const clearFilter = () => {
     setSelectedSkills([]);
     setSelectedLocation("");
     setSelectedRating("");
-    setFilteredFreelancers(freelancers);
+    setSearchQuery("");
   };
 
-  // Toggle the notification drawer visibility
-  const toggleDrawer = () => {
-    setIsDrawerOpen((prevState) => !prevState);
+  // Toggle drawer
+  const toggleDrawer = () => setIsDrawerOpen((prevState) => !prevState);
+
+  // Navigate to profile
+  const handleProfileClick = () => {
+    navigate(localStorage.getItem("role") === "user" ? "/userprofile" : "/profile");
   };
 
   return (
     <div>
-
       {loading ? (
         <div className="flex justify-center items-center min-h-screen">
           <CircularProgress />
         </div>
       ) : (
-
         <div className="h-screen w-screen bg-white flex flex-col">
           <header className="bg-white shadow top-0 left-0 w-full z-10">
             <div className="container mx-auto py-4 flex justify-between items-center">
@@ -172,30 +162,21 @@ const HomePage = () => {
               <div className="flex-grow mx-4">
                 <input
                   type="text"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
                   placeholder="Search"
                   className="w-full px-4 py-2 border rounded-full"
                 />
               </div>
               <div className="flex-shrink-0">
-
-               {
-                localStorage.getItem('role') === 'user' ? ( <Link to="/userprofile">
+                <Link to={localStorage.getItem("role") === "user" ? "/userprofile" : "/profile"}>
                   <img
                     src={userImg}
-                    alt="Current logged-in user"
+                    alt="Current User"
                     className="rounded-full w-10 h-10"
                   />
-                </Link>) : ( <Link to="/profile">
-                  <img
-                    src={userImg}
-                    alt="Current logged-in user"
-                    className="rounded-full w-10 h-10"
-                  />
-                </Link>)
-               }
-
+                </Link>
               </div>
-
               <div className="ms-5">
                 {localStorage.getItem("role") !== "user" && (
                   <NotificationBtn toggleDrawer={toggleDrawer} />
@@ -217,22 +198,20 @@ const HomePage = () => {
               clearFilter={clearFilter}
             />
             <main className="flex-grow ml-10 overflow-y-auto">
-              <div className="container mx-auto px-8 py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 justify-start">
-
+              <div className="container mx-auto px-8 py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                 {filteredFreelancers.map((freelancer) => (
                   <ProfileCard
                     key={freelancer.id}
                     freelancer={freelancer}
                     onProfileClick={handleProfileClick}
                   />
-                ))
-                }
+                ))}
               </div>
             </main>
           </div>
-
           <NotificationDrawer isOpen={isDrawerOpen} toggleDrawer={toggleDrawer} />
-        </div>)}
+        </div>
+      )}
     </div>
   );
 };
