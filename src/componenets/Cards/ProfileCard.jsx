@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 import HireModal from "../Modals/HireModal";
 import HireButton from "../Buttons/HireButton";
+import { useNavigate } from "react-router-dom";
 // Helper function to render stars based on the rating
 const renderStars = (rating) => {
   const fullStars = Math.floor(rating);  // Full stars for the integer part
@@ -43,6 +44,8 @@ const renderStars = (rating) => {
 const ProfileCard = ({ freelancer }) => {
   console.log(`id is ${freelancer.id}`);
 
+  const navigate = useNavigate()
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleHireClick = () => {
@@ -59,54 +62,68 @@ const ProfileCard = ({ freelancer }) => {
   const rating = parseFloat(freelancer.rating) || 0;  // Ensure rating is a number
   const reviewsCount = freelancer.reviews || 0; // Number of reviews
 
+  const handleOnclick = () => {
+    navigate(`/viewprofile/${freelancer.id}`);
+  }
+
   return (
-    <div className="border cursor-pointer hover:bg-purple-50 rounded-[20px] px-7 py-8 shadow hover:shadow-lg transition">
-      <img
-        src="https://placehold.co/100x100"
-        alt={freelancer.name}
-        className="w-16 h-16 rounded-full mb-4 mx-auto"
-      />
-      <h2 className="text-lg font-bold text-center">{freelancer.name}</h2>
-      <p className="text-center text-gray-600">
-        {freelancer.bio?.split(" ").slice(0, 5).join(" ")}{freelancer.bio?.split(" ").length > 5 && " ..."}
-      </p>  
-            <p className="text-center text-gray-800 font-semibold">
-        ${freelancer.hourlyRate}/hr
-      </p>
-      
-      {/* Render the stars based on the freelancer's rating */}
-      <div className="text-center mt-2">
-        {renderStars(rating)}
-      </div>
-
-      {/* Render the number of reviews */}
-      <div className="text-center text-gray-600 mt-1">
-        {reviewsCount} {reviewsCount === 1 ? "review" : "reviews"}
-      </div>
-
-      <div className="flex flex-wrap justify-center gap-2 mt-4">
-        {skillsArray.length > 0 ? (
-          skillsArray.map((skill, index) => (
-            <span
-              key={index}
-              className="bg-gray-200 text-gray-800 text-sm px-2 py-1 rounded"
-            >
-              {skill}
-            </span>
-          ))
-        ) : (
-          <span className="text-gray-500 text-sm">No skills listed</span>
-        )}
-      </div>
-
-      <div className="hire flex flex-wrap justify-center px-5 pt-8">
-        {/* Pass the handleHireClick function to the HireButton */}
-        <HireButton onClick={handleHireClick} />
-      </div>
-
-      {/* Modal to show job request form */}
-      {isModalOpen && <HireModal freelancer={freelancer} onClose={handleCloseModal} />}
+    <div className="relative border cursor-pointer hover:bg-purple-50 rounded-[20px] px-7 py-8 shadow hover:shadow-lg transition">
+    {/* Info Button */}
+    <button
+      className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300 transition"
+      onClick={handleOnclick} // Replace with your desired handler
+      aria-label="More Info"
+    >
+      ℹ️
+    </button>
+  
+    <img
+      src="https://placehold.co/100x100"
+      alt={freelancer.name}
+      className="w-16 h-16 rounded-full mb-4 mx-auto"
+    />
+    <h2 className="text-lg font-bold text-center">{"shubham"}</h2>
+    <p className="text-center text-gray-600">
+      {freelancer.bio?.split(" ").slice(0, 5).join(" ")}{freelancer.bio?.split(" ").length > 5 && " ..."}
+    </p>
+    <p className="text-center text-gray-800 font-semibold">
+      ${freelancer.hourlyRate}/hr
+    </p>
+    
+    {/* Render the stars based on the freelancer's rating */}
+    <div className="text-center mt-2">
+      {renderStars(rating)}
     </div>
+  
+    {/* Render the number of reviews */}
+    <div className="text-center text-gray-600 mt-1">
+      {reviewsCount} {reviewsCount === 1 ? "review" : "reviews"}
+    </div>
+  
+    <div className="flex flex-wrap justify-center gap-2 mt-4">
+      {skillsArray.length > 0 ? (
+        skillsArray.map((skill, index) => (
+          <span
+            key={index}
+            className="bg-gray-200 text-gray-800 text-sm px-2 py-1 rounded"
+          >
+            {skill}
+          </span>
+        ))
+      ) : (
+        <span className="text-gray-500 text-sm">No skills listed</span>
+      )}
+    </div>
+  
+    <div className="hire flex flex-wrap justify-center px-5 pt-8">
+      {/* Pass the handleHireClick function to the HireButton */}
+      <HireButton onClick={handleHireClick} />
+    </div>
+  
+    {/* Modal to show job request form */}
+    {isModalOpen && <HireModal freelancer={freelancer} onClose={handleCloseModal} />}
+  </div>
+  
   );
 };
 
