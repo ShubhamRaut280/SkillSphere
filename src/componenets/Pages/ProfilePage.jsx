@@ -476,6 +476,7 @@ const ProfilePage = () => {
                                     projectDescription={project.projectDescription}
                                     status={project.status}
                                     cost={project.cost}
+                                    role={'freelance'}
                                 />
                             ))}
                         </div>

@@ -342,6 +342,7 @@ const UserProfilePage = () => {
                             projectDescription={project.projectDescription}
                             status={project.status}
                             cost={project.cost}
+                            role={'user'}
                         />
                     ))}
                 </div>
