@@ -33,6 +33,8 @@ const UserProfilePage = () => {
     const [email, setEmail] = useState("");
     const [user, setUser] = useState({}); // User object
 
+    const [freelancerId, setFreelancerId] = useState('');
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -84,6 +86,7 @@ const UserProfilePage = () => {
                         querySnapshot.docs.map(async (document) => {
                             const reqdata = document.data();
                             const recDocRef = doc(db, "users", reqdata.freelancerId);
+                            setFreelancerId(reqdata.freelancerId);
                             const userSnap = await getDoc(recDocRef);
 
                             if (userSnap.exists()) {
@@ -343,6 +346,7 @@ const UserProfilePage = () => {
                             status={project.status}
                             cost={project.cost}
                             role={'user'}
+                            freelancerId={freelancerId}
                         />
                     ))}
                 </div>

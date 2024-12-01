@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faHourglassHalf, faThumbsUp, faTimesCircle, faStar } from "@fortawesome/free-solid-svg-icons";
 
-const ProjectCard = ({ projectName, projectDescription, status, cost, role }) => {
+import { auth, db } from '../../firebaseConfig';
+import { doc, getDoc, setDoc, arrayUnion } from 'firebase/firestore';
+
+
+const ProjectCard = ({ projectName, projectDescription, status, cost, role, freelancerId }) => {
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0); // Hover state for stars
@@ -17,13 +21,51 @@ const ProjectCard = ({ projectName, projectDescription, status, cost, role }) =>
     };
 
     const currentStatus = statusDetails[status] || {};
-
-    const handleRatingSubmit = () => {
-        console.log("Rating submitted:", { rating, comment });
-        setShowRatingModal(false);
-        setRating(0);
-        setComment("");
+    
+    const handleRatingSubmit = async () => {
+      try {
+        const ratingDocRef = doc(db, "ratings", freelancerId);
+    
+        // Fetch the current data for the freelancer
+        const ratingDoc = await getDoc(ratingDocRef);
+    
+        let newAvgRating;
+        let newRatingsArray;
+    
+        if (ratingDoc.exists()) {
+          const { avg_rating, ratings } = ratingDoc.data();
+    
+          // Calculate the new average rating
+          const totalRatings = ratings.length;
+          newAvgRating = ((avg_rating * totalRatings) + rating) / (totalRatings + 1);
+    
+          // Add the new rating and comment
+          newRatingsArray = arrayUnion({ rating, review: comment });
+        } else {
+          // If no document exists, initialize it
+          newAvgRating = rating;
+          newRatingsArray = [{ rating, review: comment }];
+        }
+    
+        // Save or update the document
+        await setDoc(ratingDocRef, {
+          avg_rating: newAvgRating,
+          ratings: newRatingsArray,
+        });
+    
+        console.log("Rating submitted successfully!");
+      } catch (error) {
+        console.error("Error submitting rating:", error);
+      }
+    
+      // Reset modal state
+      setShowRatingModal(false);
+      setRating(0);
+      setComment("");
     };
+    
+
+
 
     return (
         <div className="p-6 border rounded-[30px] shadow-lg bg-white hover:shadow-xl transition relative">
