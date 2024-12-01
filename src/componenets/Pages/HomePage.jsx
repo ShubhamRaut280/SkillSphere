@@ -27,6 +27,16 @@ const getUniqueRatings = (freelancers) => {
 };
 
 const HomePage = () => {
+
+
+
+  const navigate = useNavigate();
+
+  if (localStorage.getItem("role") === "freelance") {
+    navigate("/dashboard");
+  }
+
+
   const [freelancers, setFreelancers] = useState([]);
   const [filteredFreelancers, setFilteredFreelancers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,19 +50,21 @@ const HomePage = () => {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [userImg, setUserImg] = useState("https://placehold.co/40x40");
-  const navigate = useNavigate();
+
+
+
 
   // Fetch current user
   useEffect(() => {
     const fetchCurrentUser = async () => {
-        setCurrentUserId( localStorage.getItem("userId"));
-        const userDocRef = doc(db, "users", localStorage.getItem("userId"));
-        const userSnap = await getDoc(userDocRef);
-        if (userSnap.exists()) {
-          const userData = userSnap.data();
-          setUserImg(userData.img);
-        }
-      
+      setCurrentUserId(localStorage.getItem("userId"));
+      const userDocRef = doc(db, "users", localStorage.getItem("userId"));
+      const userSnap = await getDoc(userDocRef);
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        setUserImg(userData.img);
+      }
+
     };
     fetchCurrentUser();
   }, []);

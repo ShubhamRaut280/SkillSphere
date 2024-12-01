@@ -327,13 +327,7 @@ const ProfilePage = () => {
             </div>
         ) : (
             <div>
-                <button
-                    className="flex items-center gap-2 text-white bg-purple-500 m-5 px-5 py-3 rounded-lg shadow hover:bg-purple-800 transition"
-                    onClick={handleBackClick} // Replace with your back navigation logic
-                >
-                    <FontAwesomeIcon icon={faArrowLeft} />
-
-                </button>
+               
                 <div className="bg-white min-h-screen mt-5 flex flex-col p-6 md:max-w-6xl mx-auto border rounded-lg">
                     {/* Header Section */}
                     <div className="flex items-center mb-4">

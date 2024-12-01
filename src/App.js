@@ -5,6 +5,7 @@ import HomePage from './componenets/Pages/HomePage';
 import ProfilePage from './componenets/Pages/ProfilePage';
 import UserProfilePage from './componenets/Pages/UserProfilePage';
 import ViewProfilePage from './componenets/Pages/ViewProfilePage';
+import FreelancersHomePage from './componenets/Pages/FreelancersHomePage';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -48,6 +49,7 @@ function App() {
           {/* Define other pages */}
           <Route path="/home" element={<HomePage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/dashboard" element={<FreelancersHomePage />} />
           <Route path="/userprofile" element={<UserProfilePage />} />
           <Route path="/viewprofile/:userId" element={<ViewProfilePage />} />
         </Routes>
