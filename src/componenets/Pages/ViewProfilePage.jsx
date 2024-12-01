@@ -12,6 +12,7 @@ import { auth, db } from '../../firebaseConfig';
 import { doc, getDoc, getFirestore, updateDoc, query, getDocs, collection, where } from 'firebase/firestore';
 import { useNavigate, useParams } from "react-router-dom";
 import ProjectCard from "../Cards/ProjectCard";
+import ReviewsCard from "../Cards/ReviewsCard";
 
 const renderStars = (rating) => {
     const fullStars = Math.floor(rating);  // Full stars for the integer part
@@ -50,9 +51,6 @@ const renderStars = (rating) => {
     );
 };
 const ViewProfilePage = () => {
-    const [showBioDialog, setShowBioDialog] = useState(false);
-    const [showSkillsDialog, setShowSkillsDialog] = useState(false);
-    const [showEditDetailsDialog, setShowEditDetailsDialog] = useState(false); // Dialog state
     const [hourlyRate, setHourlyRate] = useState("");  // Add state for hourly rate
     const [jobs, setJobs] = useState([])
     const [loading, setLoading] = useState(true);
@@ -331,6 +329,13 @@ const ViewProfilePage = () => {
                                 />
                             ))}
                         </div>
+                    </div>
+
+                     {/* Reviews History Section */}
+                     <div className="border-t pt-4">
+                        <h2 className="text-xl font-bold mb-2">Reviews History</h2>
+                        <ReviewsCard freelancerId={userId} />
+
                     </div>
 
                     </div>
