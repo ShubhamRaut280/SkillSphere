@@ -289,18 +289,11 @@ const ViewProfilePage = () => {
                         </div>
                        
                         </div>
-                    </div>
-
-                    {/* Bio and Skills Section */}
+                         {/* Bio and Skills Section */}
                     <div className="flex flex-col md:flex-row mb-4 gap-4">
                         <div className="flex-1 p-4 border rounded-lg relative">
                             <h2 className="text-xl font-bold mb-2">Bio</h2>
                             <p className="text-gray-700">{bio}</p>
-                            <FontAwesomeIcon
-                                icon={faEdit}
-                                className="absolute top-4 right-4 text-purple-500 cursor-pointer"
-                                onClick={() => setShowBioDialog(true)}
-                            />
                         </div>
                         <div className="flex-1 p-4 border rounded-lg relative">
                             <h2 className="text-xl font-bold mb-2">Skills</h2>
@@ -339,6 +332,9 @@ const ViewProfilePage = () => {
                         </div>
                     </div>
 
+                    </div>
+
+                   
             </div>
         )}
     </div>
