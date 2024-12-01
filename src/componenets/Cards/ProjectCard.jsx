@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faHourglassHalf, faThumbsUp, faTimesCircle, faStar } from "@fortawesome/free-solid-svg-icons";
 
 import { auth, db } from '../../firebaseConfig';
-import { doc, getDoc, setDoc, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, arrayUnion } from 'firebase/firestore';
 
 
 const ProjectCard = ({ projectName, projectDescription, status, cost, role, freelancerId }) => {
@@ -30,7 +30,7 @@ const ProjectCard = ({ projectName, projectDescription, status, cost, role, free
         const ratingDoc = await getDoc(ratingDocRef);
     
         let newAvgRating;
-        let newRatingsArray;
+        const newRating = { rating, review: comment }; // New rating object
     
         if (ratingDoc.exists()) {
           const { avg_rating, ratings } = ratingDoc.data();
@@ -39,19 +39,35 @@ const ProjectCard = ({ projectName, projectDescription, status, cost, role, free
           const totalRatings = ratings.length;
           newAvgRating = ((avg_rating * totalRatings) + rating) / (totalRatings + 1);
     
-          // Add the new rating and comment
-          newRatingsArray = arrayUnion({ rating, review: comment });
+          // Update the existing document
+          await updateDoc(ratingDocRef, {
+            avg_rating: newAvgRating,
+            ratings: arrayUnion(newRating), // Append the new rating to the existing array
+          });
         } else {
-          // If no document exists, initialize it
+          // If no document exists, create it
           newAvgRating = rating;
-          newRatingsArray = [{ rating, review: comment }];
+          await setDoc(ratingDocRef, {
+            avg_rating: newAvgRating,
+            ratings: [newRating],
+          });
+        
         }
-    
-        // Save or update the document
-        await setDoc(ratingDocRef, {
-          avg_rating: newAvgRating,
-          ratings: newRatingsArray,
-        });
+
+        try {
+            const userDocRef = doc(db, "users", freelancerId);
+
+            await updateDoc(userDocRef, {
+                rating : newAvgRating
+            });
+
+            console.log(`Details updated successfully.`);
+        } catch (error) {
+            console.error("Error updating details", error);
+        }
+
+
+
     
         console.log("Rating submitted successfully!");
       } catch (error) {
