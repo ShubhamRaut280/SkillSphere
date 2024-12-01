@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 import HireModal from "./Modals/HireModal";
 import HireButton from "./Buttons/HireButton";
+import { useNavigate } from "react-router-dom";
 // Helper function to render stars based on the rating
 const renderStars = (rating) => {
   const fullStars = Math.floor(rating);  // Full stars for the integer part
@@ -42,6 +43,7 @@ const renderStars = (rating) => {
 
 const ProfileCard = ({ freelancer }) => {
   console.log(`id is ${freelancer.id}`);
+  const navigate = useNavigate();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -59,8 +61,15 @@ const ProfileCard = ({ freelancer }) => {
   const rating = parseFloat(freelancer.rating) || 0;  // Ensure rating is a number
   const reviewsCount = freelancer.reviews || 0; // Number of reviews
 
+  const handleCardClick = () => {
+    navigate(`/viewprofile/${freelancer.id}`);
+  }
+
+
   return (
-    <div className="border cursor-pointer hover:bg-purple-50 rounded-[20px] px-7 py-8 shadow hover:shadow-lg transition">
+    <div className="border cursor-pointer hover:bg-purple-50 rounded-[20px] px-7 py-8 shadow hover:shadow-lg transition"
+    onClick={handleCardClick}
+    >
       <img
         src={freelancer.img ? freelancer.img : "https://placehold.co/100x100"} // Default image if none is provided
         alt={freelancer.name}

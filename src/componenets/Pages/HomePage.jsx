@@ -148,6 +148,8 @@ const HomePage = () => {
     navigate(localStorage.getItem("role") === "user" ? "/userprofile" : "/profile");
   };
 
+
+
   return (
     <div>
       {loading ? (
@@ -203,7 +205,6 @@ const HomePage = () => {
                   <ProfileCard
                     key={freelancer.id}
                     freelancer={freelancer}
-                    onProfileClick={handleProfileClick}
                   />
                 ))}
               </div>
