@@ -45,16 +45,14 @@ const HomePage = () => {
   // Fetch current user
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      const user = auth.currentUser;
-      if (user) {
-        setCurrentUserId(user.uid);
+        setCurrentUserId( localStorage.getItem("userId"));
         const userDocRef = doc(db, "users", localStorage.getItem("userId"));
         const userSnap = await getDoc(userDocRef);
         if (userSnap.exists()) {
           const userData = userSnap.data();
           setUserImg(userData.img);
         }
-      }
+      
     };
     fetchCurrentUser();
   }, []);

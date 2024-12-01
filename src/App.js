@@ -1,39 +1,58 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import AuthPage  from './componenets/Pages/AuthPage';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import AuthPage from './componenets/Pages/AuthPage';
 import HomePage from './componenets/Pages/HomePage';
 import ProfilePage from './componenets/Pages/ProfilePage';
 import UserProfilePage from './componenets/Pages/UserProfilePage';
 import ViewProfilePage from './componenets/Pages/ViewProfilePage';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login status
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check local storage for userId and update login state
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const RequireAuth = ({ children }) => {
+    const location = useLocation();
+    const userId = localStorage.getItem('userId');
+
+    // Redirect to home if userId exists and user is on login/register pages
+    if (
+      userId &&
+      (location.pathname === '/' || location.pathname === '/register')
+    ) {
+      return <Navigate to="/home" replace />;
+    }
+
+    return children;
+  };
 
   return (
     <Router>
       <div className="App">
         <Routes>
-          {/* Redirect to HomePage if logged in, otherwise show AuthPage */}
+          {/* Handle login or registration with redirection */}
           <Route
             path="/"
             element={
-              isLoggedIn ? (
-                <Navigate to="/home" replace />
-              ) : (
+              <RequireAuth>
                 <AuthPage onLoginSuccess={() => setIsLoggedIn(true)} />
-              )
+              </RequireAuth>
             }
           />
-          {/* Full-screen HomePage */}
+          {/* Define other pages */}
           <Route path="/home" element={<HomePage />} />
-          <Route path="/profile" element={ <ProfilePage />} />
-          <Route path="/userprofile" element={ <UserProfilePage />} />
-          <Route path="/viewprofile/:userId" element={ <ViewProfilePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/userprofile" element={<UserProfilePage />} />
+          <Route path="/viewprofile/:userId" element={<ViewProfilePage />} />
         </Routes>
       </div>
     </Router>
-    
-  
   );
 }
 
