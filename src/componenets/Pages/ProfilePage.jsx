@@ -322,13 +322,13 @@ const ProfilePage = () => {
 
     return (<div>
         {loading ? (
-            <div className="flex justify-center items-center min-h-screen">
+            <div className="flex justify-center ms-[500px] items-center min-h-screen">
                 <CircularProgress />
             </div>
         ) : (
             <div>
                
-                <div className="bg-white min-h-screen mt-5 flex flex-col p-6 md:max-w-6xl mx-auto border rounded-lg">
+                <div className="bg-white min-h-screen flex flex-col p-6 md:max-w-6xl mx-auto border">
                     {/* Header Section */}
                     <div className="flex items-center mb-4">
                         <div className="relative">
