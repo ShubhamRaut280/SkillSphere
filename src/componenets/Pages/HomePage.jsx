@@ -170,7 +170,7 @@ const HomePage = () => {
         <div className="h-screen w-screen bg-white flex flex-col">
           <header className="bg-white shadow top-0 left-0 w-full z-10">
             <div className="container mx-auto py-4 flex justify-between items-center">
-              <div className="text-2xl font-bold">Local Search</div>
+              <div className="text-2xl font-bold">SkillSphere</div>
               <div className="flex-grow mx-4">
                 <input
                   type="text"
