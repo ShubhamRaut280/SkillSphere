@@ -18,16 +18,16 @@ SkillSphere is a React-based freelancing platform powered by Firebase. It enable
 
 ## Tech Stack
 
-- **Frontend**: React, React Router, Material-UI/Chakra-UI/Ant Design (for styling).
-- **Backend**: Firebase (Authentication, Firestore Database, Cloud Functions).
-- **Deployment**: Hosted on Firebase Hosting.
+- **Frontend**: React.
+- **Backend**: Nodejs , Firebase.
+- **Deployment**: Firebase Hosting.
 
 ## Installation and Setup
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/skillsphere.git
-   cd skillsphere
+   git clone https://github.com/ShubhamRaut280/Local-service-frontend-react.git
+   cd Local-service-frontend-react
    ```
 
 2. Install dependencies:
@@ -37,7 +37,7 @@ SkillSphere is a React-based freelancing platform powered by Firebase. It enable
 
 3. Set up Firebase:
    - Create a Firebase project at [Firebase Console](https://console.firebase.google.com).
-   - Enable Authentication, Firestore, and Cloud Functions.
+   - Enable Authentication, Firestore.
    - Download the firebaseConfig object and add it to a `.env` file:
      ```env
      REACT_APP_FIREBASE_API_KEY=your_api_key
