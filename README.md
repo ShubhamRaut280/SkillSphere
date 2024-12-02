@@ -67,7 +67,7 @@ SkillSphere is a React-based freelancing platform powered by Firebase. It enable
 
 ## Live Demo
 
-👉 Visit SkillSphere
+[👉 Visit SkillSphere](https://local-services.web.app/)
 
 ## Contributing
 
