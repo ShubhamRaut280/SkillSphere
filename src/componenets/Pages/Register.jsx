@@ -28,7 +28,6 @@ const Register = ({ onToggleForm }) => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Utility functions for capitalization
-
     const capitalizeEachSubstring = (str) => {
         if (!str) return '';
         return str
@@ -36,7 +35,6 @@ const Register = ({ onToggleForm }) => {
             .map((substr) => substr.trim().charAt(0).toUpperCase() + substr.trim().slice(1))
             .join(', ');
     };
-    
 
     const capitalizeEachWord = (str) => {
         return str
@@ -86,13 +84,13 @@ const Register = ({ onToggleForm }) => {
             // Register user with email and password
             const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
             const user = userCredential.user;
-        
+
             // Update the user profile after successful registration
             await updateProfile(user, {
                 displayName: capitalizeEachWord(formData.name),
                 phoneNumber: formData.phoneNumber,
             });
-        
+
             // Save additional user details in Firestore
             const userRef = doc(db, 'users', user.uid);
             await setDoc(userRef, {
@@ -106,7 +104,7 @@ const Register = ({ onToggleForm }) => {
                 skills: capitalizeEachSubstring(formData.skills), // Capitalize each skill
                 hourlyRate: formData.hourlyRate,
             });
-        
+
             toast.success('Registration successful! Now you can login with your credentials', { position: "top-center", autoClose: 5000 });
         } catch (err) {
             console.error('Error during registration:', err.message);
@@ -115,7 +113,6 @@ const Register = ({ onToggleForm }) => {
         } finally {
             setIsLoading(false);
         }
-        
     };
 
     return (
@@ -123,8 +120,9 @@ const Register = ({ onToggleForm }) => {
             <h1 className="font-sans text-3xl font-bold mb-4">REGISTER</h1>
             {error && <div className="text-red-500 mb-4">{error}</div>}
 
-            <form onSubmit={handleSubmit}>
-                <div className="mb-4">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* Reduced gap */}
+                {/* Name field that spans both columns */}
+                <div className="col-span-2">
                     <input
                         type="text"
                         name="name"
@@ -134,7 +132,9 @@ const Register = ({ onToggleForm }) => {
                         onChange={handleChange}
                     />
                 </div>
-                <div className="mb-4">
+
+                {/* Email and Phone Number in a row */}
+                <div>
                     <input
                         type="email"
                         name="email"
@@ -144,7 +144,7 @@ const Register = ({ onToggleForm }) => {
                         onChange={handleChange}
                     />
                 </div>
-                <div className="mb-4">
+                <div>
                     <input
                         type="text"
                         name="phoneNumber"
@@ -154,7 +154,9 @@ const Register = ({ onToggleForm }) => {
                         onChange={handleChange}
                     />
                 </div>
-                <div className="mb-4">
+
+                {/* Address and Location in a row */}
+                <div>
                     <input
                         type="text"
                         name="address"
@@ -164,7 +166,7 @@ const Register = ({ onToggleForm }) => {
                         onChange={handleChange}
                     />
                 </div>
-                <div className="mb-4">
+                <div>
                     <input
                         type="text"
                         name="location"
@@ -174,7 +176,9 @@ const Register = ({ onToggleForm }) => {
                         onChange={handleChange}
                     />
                 </div>
-                <div className="mb-4">
+
+                {/* Role dropdown (below Address and Location) */}
+                <div className="col-span-2">
                     <select
                         name="role"
                         className="w-full p-2 border rounded"
@@ -186,19 +190,20 @@ const Register = ({ onToggleForm }) => {
                     </select>
                 </div>
 
-                {/* Show additional fields for Freelance role */}
+                {/* Freelancer additional fields */}
                 {formData.role === 'freelance' && (
                     <>
-                        <div className="mb-4">
+                        <div className="col-span-2">
                             <textarea
                                 name="bio"
                                 placeholder="Bio"
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border rounded min-h-[40px] resize-both" // Full width, grows in height
                                 value={formData.bio}
                                 onChange={handleChange}
                             />
                         </div>
-                        <div className="mb-4">
+                        <div className="flex space-x-4"> {/* Reduced space-x */}
+                        
                             <input
                                 type="text"
                                 name="skills"
@@ -208,7 +213,9 @@ const Register = ({ onToggleForm }) => {
                                 onChange={handleChange}
                             />
                         </div>
-                        <div className="mb-4">
+
+                        {/* Freelance: Add Hourly Rate to the left column */}
+                        <div className="flex space-x-4"> {/* Reduced space-x */}
                             <input
                                 type="number"
                                 name="hourlyRate"
@@ -221,8 +228,8 @@ const Register = ({ onToggleForm }) => {
                     </>
                 )}
 
-                {/* Password Field with Eye Button */}
-                <div className="relative mb-4">
+                {/* Password fields that span full row */}
+                <div className="relative col-span-2">
                     <input
                         type={showPassword ? 'text' : 'password'}
                         name="password"
@@ -239,8 +246,8 @@ const Register = ({ onToggleForm }) => {
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                     </button>
                 </div>
-                {/* Confirm Password Field with Eye Button */}
-                <div className="relative mb-4">
+
+                <div className="relative col-span-2">
                     <input
                         type={showConfirmPassword ? 'text' : 'password'}
                         name="confirmPassword"
@@ -258,16 +265,17 @@ const Register = ({ onToggleForm }) => {
                     </button>
                 </div>
 
+                {/* Submit Button */}
                 <button
                     type="submit"
-                    className="bg-purple-500 hover:bg-purple-600 text-white rounded-lg py-2 px-4 w-full"
+                    className="bg-purple-500 hover:bg-purple-600 text-white rounded-lg py-2 px-4 w-full mt-4"
                     disabled={isLoading}
                 >
                     {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Register Now'}
                 </button>
             </form>
 
-            <div className="mt-8 text-center">
+            <div className="mt-4 text-center"> {/* Reduced margin-top */}
                 <span>Already have an account? </span>
                 <button
                     onClick={() => onToggleForm(false)}
@@ -279,6 +287,7 @@ const Register = ({ onToggleForm }) => {
 
             <ToastContainer />
         </div>
+
     );
 };
 
