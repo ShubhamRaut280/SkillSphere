@@ -47,13 +47,16 @@ const ProfileCard = ({ freelancer }) => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleHireClick = () => {
+  const handleHireClick = (event) => {
+    event.stopPropagation();  // Prevent the click event from bubbling up to the ProfileCard
     setIsModalOpen(true); // Open modal when the Hire button is clicked
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = (event) => {
+    event.stopPropagation();  // Prevent click event from propagating to parent (ProfileCard)
     setIsModalOpen(false); // Close modal
   };
+
   const skillsArray = freelancer.skills
     ? freelancer.skills.split(",").map((skill) => skill.trim())
     : []; // Fallback in case skills are undefined or empty
@@ -63,12 +66,12 @@ const ProfileCard = ({ freelancer }) => {
 
   const handleCardClick = () => {
     navigate(`/viewprofile/${freelancer.id}`);
-  }
-
+  };
 
   return (
-    <div className="border cursor-pointer hover:bg-purple-50 rounded-[20px] px-7 py-8 shadow hover:shadow-lg transition"
-    onClick={handleCardClick}
+    <div
+      className="border cursor-pointer hover:bg-purple-50 rounded-[20px] px-7 py-8 shadow hover:shadow-lg transition"
+      onClick={handleCardClick}
     >
       <img
         src={freelancer.img ? freelancer.img : "https://placehold.co/100x100"} // Default image if none is provided
@@ -78,20 +81,20 @@ const ProfileCard = ({ freelancer }) => {
       <h2 className="text-lg font-bold text-center">{freelancer.name}</h2>
       <p className="text-center text-gray-600">
         {freelancer.bio?.split(" ").slice(0, 5).join(" ")}{freelancer.bio?.split(" ").length > 5 && " ..."}
-      </p>  
-            <p className="text-center text-gray-800 font-semibold">
+      </p>
+      <p className="text-center text-gray-800 font-semibold">
         ${freelancer.hourlyRate}/hr
       </p>
-      
+
       {/* Render the stars based on the freelancer's rating */}
       <div className="text-center mt-2">
         {renderStars(rating)}
       </div>
 
       {/* Render the number of reviews */}
-      <div className="text-center text-gray-600 mt-1">
+      {/* <div className="text-center text-gray-600 mt-1">
         {reviewsCount} {reviewsCount === 1 ? "review" : "reviews"}
-      </div>
+      </div> */}
 
       <div className="flex flex-wrap justify-center gap-2 mt-4">
         {skillsArray.length > 0 ? (
@@ -119,4 +122,5 @@ const ProfileCard = ({ freelancer }) => {
   );
 };
 
-export default ProfileCard;
+
+export default ProfileCard
