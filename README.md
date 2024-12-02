@@ -26,8 +26,8 @@ SkillSphere is a React-based freelancing platform powered by Firebase. It enable
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/ShubhamRaut280/Local-service-frontend-react.git
-   cd Local-service-frontend-react
+   git clone https://github.com/ShubhamRaut280/SkillSphere.git
+   cd SkillSphere
    ```
 
 2. Install dependencies:
