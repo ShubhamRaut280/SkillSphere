@@ -69,13 +69,13 @@ const ProfileCard = ({ freelancer }) => {
   return (
     <div className="relative border cursor-pointer hover:bg-purple-50 rounded-[20px] px-7 py-8 shadow hover:shadow-lg transition">
     {/* Info Button */}
-    <button
+    {/* <button
       className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300 transition"
       onClick={handleOnclick} // Replace with your desired handler
       aria-label="More Info"
     >
-      ℹ️
-    </button>
+     
+    </button> */}
   
     <img
       src="https://placehold.co/100x100"

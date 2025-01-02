@@ -136,10 +136,9 @@ const HireModal = ({ freelancer, onClose }) => {
     }
 };
 
-
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg w-96 relative">
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50" onClick={onClose}>
+      <div className="bg-white p-6 rounded-lg w-96 relative" onClick={(e) => e.stopPropagation()}>
         <ToastContainer />
         <button
           onClick={onClose}
